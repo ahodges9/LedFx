@@ -44,7 +44,7 @@ class AudioInputSource(object):
     _audioWindowSize = 4
 
     AUDIO_CONFIG_SCHEMA = vol.Schema({
-        vol.Optional('sample_rate', default = 60): int,
+        vol.Optional('sample_rate', default = 120): int,
         vol.Optional('mic_rate', default = 44100): int,
         vol.Optional('window_size', default = 4): int,
         vol.Optional('device_index', default = 0): int
@@ -144,7 +144,7 @@ class AudioInputSource(object):
 class MelbankInputSource(AudioInputSource):
 
     CONFIG_SCHEMA = vol.Schema({
-        vol.Optional('sample_rate', default = 60): int,
+        vol.Optional('sample_rate', default = 120): int,
         vol.Optional('mic_rate', default = 44100): int,
         vol.Optional('window_size', default = 4): int,
         vol.Optional('samples', default = 24): int,
@@ -280,21 +280,29 @@ class MelbankInputSource(AudioInputSource):
 
     def _initialize_octaves(self, 
                             n_notes=12*4,
-                            n_average=20,
+                            n_average=30,
+                            amplification_power=2.6,
+                            average_weighting_factor=1/20,
+                            max_clip=0.2,
                             freq_low=220,
                             freq_high=7040):
         """Initialise all the octave note detection variables
-        int n_notes:    Number of notes (divisions) per octave (recommend multiple of 12)
-        int n_average:  Number of frames to compute average from. More frames = less noise and stronger peaks, but slower response
-        int freq_low:   Lower limit to use from fft
-        int freq_high:  Upper limit to use from fft
+        int     n_notes:                Number of notes (divisions) per octave (recommend multiple of 12)
+        int     n_average:              Number of frames to compute average from. More frames = less noise and stronger peaks, but slower response
+        float   amplification_power     Exponent applied to peaks to sharpen them
+        float   average_weighting_exp   e^kx used for weighting averages. Higher value = more weighting towards fresh sampled octaves
+        float   max_clip                Upper clipping value. Rarely exceeds 0.5, usually around 0.2 max
+        int     freq_low:               Lower limit to use from fft
+        int     freq_high:              Upper limit to use from fft
         """
 
         self.n_notes = n_notes
+        self.max_clip = max_clip
+        self.amplification_power = amplification_power
         #freq_range = np.array([FREQUENCY_RANGES["bass"].min, FREQUENCY_RANGES["presence"].max])
         freq_range = np.array([freq_low, freq_high])
         # Linear scale of frequencies from 0 to MIC_RATE, with fftgrain.norm.size number of values
-        self.lin_scale = np.linspace(0, self._config['mic_rate'], self._config["nfft"]//2+1)
+        self.lin_scale = np.linspace(0, self._config['mic_rate'], self._config["fft_size"]//2+1)
         # limits converted to octaves above and below 440Hz (A). Non-integer octaves rounded down.
         octave_range = np.log2(440/freq_range).astype(int)
         # All octave frequencies ranging from lower to upper limit eg: [110, 220, 440, 880, 1760,  3520,  7040, 14080]
@@ -303,15 +311,19 @@ class MelbankInputSource(AudioInputSource):
         self.octave_indexes = np.searchsorted(self.lin_scale, log_scale)
         # 3d array where octaves are stored. Used to get an average over n_average samples
         self.rolling_octaves_stack = np.zeros((n_average, octave_range[0]-octave_range[1]-1, self.n_notes))
+        # Weighting array for rolling average. More recent calculated octave (higher in stack) given more weight in octave average.
+        self.average_weighting = np.exp(-average_weighting_factor*np.array(range(n_average)))
         # 1d array where the averaged octave data is stored. This is the output.
         self.averaged_octave = np.zeros(self.n_notes)
+        # Exp smoothing filter for output
+        self.octave_smoothing = ExpFilter(np.tile(1e-1, self.n_notes), alpha_decay=0.2, alpha_rise=0.99)
 
     def compute_melmat(self):
         return mel.compute_melmat(
             num_mel_bands=self._config['samples'],
             freq_min=self._config['min_frequency'],
             freq_max=self._config['max_frequency'],
-            num_fft_bands=int(self._config['nfft'] // 2) + 1,
+            num_fft_bands=int(self._config['fft_size'] // 2) + 1,
             sample_rate=self._config['mic_rate'])
 
     def octaves(self, fftgrain):
@@ -327,8 +339,25 @@ class MelbankInputSource(AudioInputSource):
         self.rolling_octaves_stack = np.roll(self.rolling_octaves_stack, 1, axis=0)
         # Add the freshly made octave data to the top of the stack
         self.rolling_octaves_stack[0] = interpolated_octaves
-        # Calculate amplitude across octave
-        self.averaged_octave = np.mean(np.mean(self.rolling_octaves_stack, axis=0), axis=0)*10
+        # Calculate averages across octave, with newer octaves given more weight
+        self.averaged_octave = np.average(self.rolling_octaves_stack.mean(axis=1), axis=0, weights=self.average_weighting)
+        # Calculate the average height of octave peaks for cutoff
+        average_cutoff = np.mean(self.averaged_octave)
+        # Remove values below average
+        self.averaged_octave -= average_cutoff
+        # Clip between 0 and max_clip
+        self.averaged_octave = np.clip(self.averaged_octave, 0, self.max_clip)
+        # Scale between 0 and 1
+        self.averaged_octave *= 1/self.averaged_octave.max()
+        #self.averaged_octave *= 2.0/self.max_clip
+        #self.averaged_octave *= 2.0/self.averaged_octave.max()
+        # Raise to amplification power
+        self.averaged_octave = np.power(self.averaged_octave, self.amplification_power)
+        # Fit to scale 2 on graph
+        self.averaged_octave *= 2.0
+        # Smooth output using exp filter
+        self.averaged_octave = self.octave_smoothing.update(self.averaged_octave)
+
         #print("interped", interpolated_octaves.sum(axis=0))
         #print("averaged", self.averaged_octave)
 
@@ -428,7 +457,7 @@ class AudioReactiveEffect(Effect):
     def _audio_data_updated(self):
         if self.is_active:
             self.audio_data_updated(get_melbank_input_source(self._ledfx))
-            
+
     def audio_data_updated(self, data):
         """
         Callback for when the audio data is updated. Should
