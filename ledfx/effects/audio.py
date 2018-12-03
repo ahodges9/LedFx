@@ -3,7 +3,7 @@ import logging
 import pyaudio
 from ledfx.effects import Effect
 import voluptuous as vol
-from ledfx.effects.math import ExpFilter
+from ledfx.effects.math import ExpFilter, ease_array
 from ledfx.effects.detect_peaks import detect_peaks
 from ledfx.events import GraphUpdateEvent
 import ledfx.effects.math as math
@@ -55,7 +55,7 @@ class AudioInputSource(object):
         self._config = self.AUDIO_CONFIG_SCHEMA(config)
         self._ledfx = ledfx
 
-        self._volume_filter = ExpFilter(np.zeros(1), alpha_decay=0.01, alpha_rise=0.1)
+        self._volume_filter = ExpFilter(np.zeros(1), alpha_decay=0.05, alpha_rise=0.5)
 
     def activate(self):
 
@@ -281,11 +281,14 @@ class MelbankInputSource(AudioInputSource):
 
     def _initialize_octaves(self, 
                             n_notes=12*4,
-                            n_average=30,
+                            n_average=20,
+                            resolution=0.1,
                             amplification_power=2.6,
-                            average_weighting_factor=1/20,
+                            easing_slope=3.5,
+                            easing_lean=0.5,
+                            average_weighting_factor=1/10,
                             max_clip=0.2,
-                            min_peak_height=0.4,
+                            min_peak_height=0.1,
                             min_peak_seperation=3,
                             freq_low=220,
                             freq_high=7040):
@@ -293,8 +296,9 @@ class MelbankInputSource(AudioInputSource):
         int     n_notes:                Number of notes (divisions) per octave (recommend multiple of 12)
         int     n_average:              Number of frames to compute average from. More frames = less noise and stronger peaks, but slower response
         float   amplification_power     Exponent applied to peaks to sharpen them
+        float   easing_slope            Sharpness of easing slope function applied to octave
         float   average_weighting_exp   e^kx used for weighting averages. Higher value = more weighting towards fresh sampled octaves
-        float   max_clip                Upper clipping value. Rarely exceeds 0.5, usually around 0.2 max
+        float   max_clip                Upper clipping value for octave data. Data rarely exceeds 0.5, usually around 0.2 max
         float   min_peak_height         Min height of octave data to compute if peak (note)
         int     min_peak_seperation     Min distance between peaks
         int     freq_low:               Lower limit to use from fft
@@ -303,7 +307,10 @@ class MelbankInputSource(AudioInputSource):
 
         self.n_notes = n_notes
         self.max_clip = max_clip
+        self.resolution = resolution
         self.amplification_power = amplification_power
+        self.easing_slope = easing_slope
+        self.easing_lean = easing_lean
         self.min_peak_height = min_peak_height
         self.min_peak_seperation = min_peak_seperation
         #self.blank_octave = np.zeros(self.n_notes)
@@ -358,13 +365,21 @@ class MelbankInputSource(AudioInputSource):
         # Clip between 0 and max_clip
         self.averaged_octave = np.clip(self.averaged_octave, 0, self.max_clip)
         # Scale between 0 and 1
-        self.averaged_octave *= 1/self.averaged_octave.max()
+        self.averaged_octave *= 1/self.max_clip
         #self.averaged_octave *= 2.0/self.max_clip
         #self.averaged_octave *= 2.0/self.averaged_octave.max()
         # Raise to amplification power
-        self.averaged_octave = np.power(self.averaged_octave, self.amplification_power)
+        # self.averaged_octave = np.power(self.averaged_octave, self.amplification_power)
+        # Run octave through easing function to seperate lows from highs
+        self.averaged_octave = ease_array(self.averaged_octave,
+                                          height=1,
+                                          length=1,
+                                          slope=self.easing_slope,
+                                          lean=self.easing_lean)
         # Smooth output using exp filter
         self.averaged_octave = self.octave_smoothing.update(self.averaged_octave)
+        # Make octave values only multiples of resolution eg [0.0, 0.7, 0.5] rather than [0.0021, 0.73824, 0.5234]
+        self.averaged_octave = self.averaged_octave - self.averaged_octave % self.resolution
         # Detect notes in octave data by looking for peaks. Data is padded with 0 either end to allow end cases to be detected as peaks.
         # self.notes is an array containing indexes of peaks.
         # self.notes = detect_peaks(np.pad(self.averaged_octave,

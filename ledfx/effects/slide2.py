@@ -22,7 +22,6 @@ class Slide2AudioEffect(AudioReactiveEffect, GradientEffect):
     })
 
     def config_updated(self, config):
-        self.n_pixels = 224
         self.bands = np.zeros(self._config["resolution"])
         self.band_smoothing = ExpFilter(np.tile(1e-1, self._config["resolution"]), alpha_decay=0.2, alpha_rise=0.9)
 
@@ -44,7 +43,7 @@ class Slide2AudioEffect(AudioReactiveEffect, GradientEffect):
         #note_heights = octave[notes]
         total_height = self.bands.sum()
         # Scale note heights up to length of strip
-        bands = self.n_pixels * (self.bands / total_height)
+        bands = self.pixel_count * (self.bands / total_height)
         # print(bands, bands.sum())
         # Make empty array, split into sectons to fill with colour
         new_pixels = np.array(np.array_split(np.zeros((224, 3)), np.cumsum(bands[:-1]).astype(int), axis=0))
@@ -55,7 +54,7 @@ class Slide2AudioEffect(AudioReactiveEffect, GradientEffect):
         # Join together colour blocks
         new_pixels = np.vstack(new_pixels)
         # Set the pixels
-        self.pixels = new_pixels[:224]
+        self.pixels = new_pixels
 
 
         # y = data.interpolated_melbank(self.pixel_count, filtered = False)
