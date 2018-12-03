@@ -21,7 +21,7 @@ class PitchSpectrumAudioEffect(AudioReactiveEffect, GradientEffect):
 
     def config_updated(self, config):
         win_s = 1024
-        hop_s = 44100 // 60
+        hop_s = 44100 // 120
         tolerance = 0.8
 
         # TODO: Move into the base audio effect class

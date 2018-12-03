@@ -4,6 +4,7 @@ import pyaudio
 from ledfx.effects import Effect
 import voluptuous as vol
 from ledfx.effects.math import ExpFilter
+from ledfx.effects.detect_peaks import detect_peaks
 from ledfx.events import GraphUpdateEvent
 import ledfx.effects.math as math
 from functools import lru_cache
@@ -284,6 +285,8 @@ class MelbankInputSource(AudioInputSource):
                             amplification_power=2.6,
                             average_weighting_factor=1/20,
                             max_clip=0.2,
+                            min_peak_height=0.4,
+                            min_peak_seperation=3,
                             freq_low=220,
                             freq_high=7040):
         """Initialise all the octave note detection variables
@@ -292,6 +295,8 @@ class MelbankInputSource(AudioInputSource):
         float   amplification_power     Exponent applied to peaks to sharpen them
         float   average_weighting_exp   e^kx used for weighting averages. Higher value = more weighting towards fresh sampled octaves
         float   max_clip                Upper clipping value. Rarely exceeds 0.5, usually around 0.2 max
+        float   min_peak_height         Min height of octave data to compute if peak (note)
+        int     min_peak_seperation     Min distance between peaks
         int     freq_low:               Lower limit to use from fft
         int     freq_high:              Upper limit to use from fft
         """
@@ -299,6 +304,9 @@ class MelbankInputSource(AudioInputSource):
         self.n_notes = n_notes
         self.max_clip = max_clip
         self.amplification_power = amplification_power
+        self.min_peak_height = min_peak_height
+        self.min_peak_seperation = min_peak_seperation
+        #self.blank_octave = np.zeros(self.n_notes)
         #freq_range = np.array([FREQUENCY_RANGES["bass"].min, FREQUENCY_RANGES["presence"].max])
         freq_range = np.array([freq_low, freq_high])
         # Linear scale of frequencies from 0 to MIC_RATE, with fftgrain.norm.size number of values
@@ -313,8 +321,10 @@ class MelbankInputSource(AudioInputSource):
         self.rolling_octaves_stack = np.zeros((n_average, octave_range[0]-octave_range[1]-1, self.n_notes))
         # Weighting array for rolling average. More recent calculated octave (higher in stack) given more weight in octave average.
         self.average_weighting = np.exp(-average_weighting_factor*np.array(range(n_average)))
-        # 1d array where the averaged octave data is stored. This is the output.
+        # 1d array where the averaged octave data is stored.
         self.averaged_octave = np.zeros(self.n_notes)
+        # 1d array where indexes of prominent notes in the octave are stored.
+        self.notes = np.array([], dtype=np.float64)
         # Exp smoothing filter for output
         self.octave_smoothing = ExpFilter(np.tile(1e-1, self.n_notes), alpha_decay=0.2, alpha_rise=0.99)
 
@@ -323,7 +333,7 @@ class MelbankInputSource(AudioInputSource):
             num_mel_bands=self._config['samples'],
             freq_min=self._config['min_frequency'],
             freq_max=self._config['max_frequency'],
-            num_fft_bands=int(self._config['fft_size'] // 2) + 1,
+            num_fft_bands=self._config['fft_size'] // 2 + 1,
             sample_rate=self._config['mic_rate'])
 
     def octaves(self, fftgrain):
@@ -353,16 +363,19 @@ class MelbankInputSource(AudioInputSource):
         #self.averaged_octave *= 2.0/self.averaged_octave.max()
         # Raise to amplification power
         self.averaged_octave = np.power(self.averaged_octave, self.amplification_power)
-        # Fit to scale 2 on graph
-        self.averaged_octave *= 2.0
         # Smooth output using exp filter
         self.averaged_octave = self.octave_smoothing.update(self.averaged_octave)
-
-        #print("interped", interpolated_octaves.sum(axis=0))
-        #print("averaged", self.averaged_octave)
-
-    #def is_beat_note(self):
-    #    return self.is_beat
+        # Detect notes in octave data by looking for peaks. Data is padded with 0 either end to allow end cases to be detected as peaks.
+        # self.notes is an array containing indexes of peaks.
+        # self.notes = detect_peaks(np.pad(self.averaged_octave,
+        #                                  (1,1),
+        #                                  "constant",
+        #                                  constant_values=(0)),
+        #                           mph=self.min_peak_height,
+        #                           mpd=self.min_peak_seperation,
+        #                           threshold=0,
+        #                           edge="rising") - 1 # -1 to remove pad from indexed values
+        # print(len(self.notes), self.notes, len(self.averaged_octave))
 
     @lru_cache(maxsize=32)
     def melbank(self):
@@ -381,7 +394,9 @@ class MelbankInputSource(AudioInputSource):
             self._ledfx.events.fire_event(GraphUpdateEvent(
                 'fft', fftgrain.norm, self.lin_scale))
             self._ledfx.events.fire_event(GraphUpdateEvent(
-                'notes', self.averaged_octave, np.arange(self.n_notes)))
+                'octave', self.averaged_octave*2.0, np.arange(self.n_notes)))
+            # self._ledfx.events.fire_event(GraphUpdateEvent(
+            #     'notes', self.notes, np.arange(self.n_notes)))
 
             # fftgrain = self.pv(self.audio_sample().astype(np.float32))
             # filter_banks = self.filterbank(fftgrain) / self.scale
@@ -458,7 +473,18 @@ class AudioReactiveEffect(Effect):
         if self.is_active:
             self.audio_data_updated(get_melbank_input_source(self._ledfx))
 
-    def audio_data_updated(self, data):
+    def audio_data_updated(self, data):  
+        """
+        Callback for when the audio data is updated. Should
+        be implemented by subclasses
+        """
+        pass
+
+    def _octave_data_updated(self):
+        if self.is_active:
+            self.octave_data_updated(get_melbank_input_source(self._ledfx))
+
+    def octave_data_updated(self, data):
         """
         Callback for when the audio data is updated. Should
         be implemented by subclasses
