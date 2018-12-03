@@ -31,6 +31,23 @@ def ease_array(x, height, length, slope=2.4, lean=1):
     g = np.power(np.divide(x, length), slope)
     return np.divide((height * g), (g + np.power((1 - np.divide(x, length)), lean*slope)))
 
+class TemporalFilter:
+    """Exponential smoothing filter across time for a 2d array of pixels"""
+
+    def __init__(self, val=None, rise=0.5, decay=0.5):
+        assert type(val) is np.ndarray
+        self.val = val.T
+        self.exp_filters = []
+        self.n_filters = self.val.shape[0]
+        for i in range(self.n_filters):
+            self.exp_filters.append(ExpFilter(np.zeros(self.val.shape[1]),
+                                              alpha_rise=rise,
+                                              alpha_decay=decay))
+
+    def update(self, val):
+        for i in range(self.n_filters):
+            self.val[i] = self.exp_filters[i].update(val.T[i])
+        return self.val.T
 
 
 class ExpFilter:

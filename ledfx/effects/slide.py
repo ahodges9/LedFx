@@ -1,6 +1,6 @@
 from ledfx.effects.audio import AudioReactiveEffect, FREQUENCY_RANGES_SIMPLE, MIN_MIDI, MAX_MIDI
 from ledfx.effects.gradient import GradientEffect
-from ledfx.effects.math import ExpFilter
+from ledfx.effects.math import ExpFilter, TemporalFilter
 from ledfx.effects import mix_colors
 from ledfx.color import COLORS
 from ledfx.events import GraphUpdateEvent
@@ -9,50 +9,57 @@ import numpy as np
 import aubio
 import math
 
-class SlideAudioEffect(AudioReactiveEffect, GradientEffect):
+class Slide2AudioEffect(AudioReactiveEffect, GradientEffect):
 
-    NAME = "Slide"
+    NAME = "Slide2"
 
     CONFIG_SCHEMA = vol.Schema({
         vol.Optional('blur', description='Amount to blur the effect', default = 1.0): vol.Coerce(float),
         vol.Optional('mirror', description='Mirror the effect', default = True): bool,
         vol.Optional('resolution', description='Number of colour bands', default = 7): vol.All(vol.Coerce(int), vol.Range(min=3, max=10)),
         #vol.Optional('fade_rate', description='Rate at which notes fade', default = 0.15):  vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
-        #vol.Optional('responsiveness', description='Responsiveness of the note changes', default = 0.15):  vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
+        vol.Optional('responsiveness', description='Responsiveness to the note changes', default = 0.03):  vol.All(vol.Coerce(float), vol.Range(min=0.01, max=1.0)),
     })
 
     def config_updated(self, config):
-        self.n_pixels = 224
+        self.bands = np.zeros(self._config["resolution"])
+        self.band_smoothing = ExpFilter(np.tile(1e-1, self._config["resolution"]), alpha_decay=0.05, alpha_rise=0.9)
+        self.temporal_filter = None
+
 
     def audio_data_updated(self, data):
+        # TODO move to config_updated when self.pixel_count at that point
+        if not self.temporal_filter:
+            self.temporal_filter = TemporalFilter(self.pixels, rise=self._config["responsiveness"], decay=0.1)
+
         # Populate octave and note data
         data.melbank()
         # Get octave and note data
         octave = data.averaged_octave
-        notes = data.notes
-        if not notes.size:
-            self.pixels *= 0.98
-            return
+        # Split octave into bins, find max value per bin
+        maxed_bins = [i.max() for i in np.array_split(octave, self._config["resolution"])]
+        # Update colour bands with max from each octave bin
+        self.bands = self.band_smoothing.update(maxed_bins)
 
-        note_heights = octave[notes]
-        total_height = note_heights.sum()
+        # TODO move to config_updated, when pixel count is known during effect setup
+        # Get colours from band indexes (scaled between 0 and 1)
+        self.colours = np.array([self.get_gradient_color(i) for i in np.linspace(0, 1, self._config["resolution"])]).astype(int)
+
+        #note_heights = octave[notes]
+        total_height = self.bands.sum()
         # Scale note heights up to length of strip
-        note_heights *= self.n_pixels / total_height
-        # Scale note indexes between 0 and 1 
-        notes = np.divide(notes, octave.size)
-        notes = notes - notes % (1 / self._config["resolution"])
-        # Get colours from scaled note indexes
-        colours = np.array([self.get_gradient_color(i) for i in notes]).astype(int)
+        bands = self.pixel_count * (self.bands / total_height)
+        # print(bands, bands.sum())
         # Make empty array, split into sectons to fill with colour
-        new_pixels = np.array(np.split(np.zeros((self.n_pixels, 3)), np.cumsum(note_heights[:-1]).astype(int)))
+        new_pixels = np.array(np.array_split(np.zeros((224, 3)), np.cumsum(bands[:-1]).astype(int), axis=0))
         # Assign pixel colours 
-        for i in range(new_pixels.shape[0]):
-            new_pixels[i][:] = colours[i]
+        for i in range(self._config["resolution"]):
+            new_pixels[i][:] = self.colours[i]
+
         # Join together colour blocks
         new_pixels = np.vstack(new_pixels)
         # Set the pixels
-        self.pixels = new_pixels
-
+        self.pixels = self.temporal_filter.update(new_pixels)
 
         # y = data.interpolated_melbank(self.pixel_count, filtered = False)
         # midi_value = self.pitch_o(data.audio_sample())[0]
