@@ -21,13 +21,13 @@ def interpolate(y, new_length):
 @lru_cache(maxsize=32)
 def _easing_func(x, height=1, length=1, slope=2.4, lean=1):
     # Apply easing function to value x.
-    # https://www.desmos.com/calculator/stq7jdlrak
+    # https://www.desmos.com/calculator/fjtcjdt2jy
     g = (x / length) ** slope
     return (height * g) / (g + (1 - x / length) ** slope)
 
 def ease_array(x, height, length, slope=2.4, lean=1):
     # Apply easing function over each value in np.array x.
-    # https://www.desmos.com/calculator/stq7jdlrak
+    # https://www.desmos.com/calculator/fjtcjdt2jy
     g = np.power(np.divide(x, length), slope)
     return np.divide((height * g), (g + np.power((1 - np.divide(x, length)), lean*slope)))
 

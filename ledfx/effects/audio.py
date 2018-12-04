@@ -282,27 +282,30 @@ class MelbankInputSource(AudioInputSource):
     def _initialize_octaves(self, 
                             n_notes=12*4,
                             n_average=20,
+                            average_weighting_factor=1/10,
                             resolution=0.1,
-                            amplification_power=2.6,
                             easing_slope=3.5,
                             easing_lean=0.5,
-                            average_weighting_factor=1/10,
                             max_clip=0.2,
                             min_peak_height=0.1,
                             min_peak_seperation=3,
                             freq_low=220,
                             freq_high=7040):
         """Initialise all the octave note detection variables
-        int     n_notes:                Number of notes (divisions) per octave (recommend multiple of 12)
-        int     n_average:              Number of frames to compute average from. More frames = less noise and stronger peaks, but slower response
-        float   amplification_power     Exponent applied to peaks to sharpen them
-        float   easing_slope            Sharpness of easing slope function applied to octave
-        float   average_weighting_exp   e^kx used for weighting averages. Higher value = more weighting towards fresh sampled octaves
-        float   max_clip                Upper clipping value for octave data. Data rarely exceeds 0.5, usually around 0.2 max
-        float   min_peak_height         Min height of octave data to compute if peak (note)
-        int     min_peak_seperation     Min distance between peaks
-        int     freq_low:               Lower limit to use from fft
-        int     freq_high:              Upper limit to use from fft
+        int     n_notes:                    Number of notes (divisions) per octave (recommend multiple of 12)
+        int     n_average:                  Number of frames to compute average from. More frames = less noise and stronger peaks, but slower response
+        float   average_weighting_factor    Factor of exponent used for weighting fft input frames. Higher value = more weighting towards fresh sampled octaves
+        float   resolution                  Number of divisions in height for octave data
+        float   easing_slope                Sharpness of easing slope function applied to octave
+        float   easing_lean                 Lean of easing slope
+        float   max_clip                    Upper clipping value for octave data. Data rarely exceeds 0.5, usually around 0.2 max
+        float   min_peak_height             Min height of octave data to compute if peak (note)
+        int     min_peak_seperation         Min distance between peaks
+        int     freq_low:                   Lower limit to use from fft
+        int     freq_high:                  Upper limit to use from fft
+
+        # Easing parameters shown on this graph
+        # https://www.desmos.com/calculator/fjtcjdt2jy
         """
 
         self.n_notes = n_notes
@@ -313,8 +316,6 @@ class MelbankInputSource(AudioInputSource):
         self.easing_lean = easing_lean
         self.min_peak_height = min_peak_height
         self.min_peak_seperation = min_peak_seperation
-        #self.blank_octave = np.zeros(self.n_notes)
-        #freq_range = np.array([FREQUENCY_RANGES["bass"].min, FREQUENCY_RANGES["presence"].max])
         freq_range = np.array([freq_low, freq_high])
         # Linear scale of frequencies from 0 to MIC_RATE, with fftgrain.norm.size number of values
         self.lin_scale = np.linspace(0, self._config['mic_rate'], self._config["fft_size"]//2+1)
@@ -334,14 +335,6 @@ class MelbankInputSource(AudioInputSource):
         self.notes = np.array([], dtype=np.float64)
         # Exp smoothing filter for output
         self.octave_smoothing = ExpFilter(np.tile(1e-1, self.n_notes), alpha_decay=0.2, alpha_rise=0.99)
-
-    def compute_melmat(self):
-        return mel.compute_melmat(
-            num_mel_bands=self._config['samples'],
-            freq_min=self._config['min_frequency'],
-            freq_max=self._config['max_frequency'],
-            num_fft_bands=self._config['fft_size'] // 2 + 1,
-            sample_rate=self._config['mic_rate'])
 
     def octaves(self, fftgrain):
         """Updates self.averaged_octave data"""
