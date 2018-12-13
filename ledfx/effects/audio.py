@@ -311,7 +311,6 @@ class MelbankInputSource(AudioInputSource):
         self.n_notes = n_notes
         self.max_clip = max_clip
         self.resolution = resolution
-        self.amplification_power = amplification_power
         self.easing_slope = easing_slope
         self.easing_lean = easing_lean
         self.min_peak_height = min_peak_height
