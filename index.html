@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation and Setup &mdash; Python  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation and Setup" href="quickstart.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> Python
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Installation and Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer.html">Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">REST API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#websocket-api">WebSocket API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Python</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Installation and Setup</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/ahodges9/LedFx/blob/master/docs/index.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="installation-and-setup">
+<h1>Installation and Setup<a class="headerlink" href="#installation-and-setup" title="Permalink to this headline">¶</a></h1>
+<p>LedFx is a network controller that aim to enable synchronization of multiple lights across a network. LedFx doesn’t currently support local control of LED strinngs so you will need a seperate devices (e.g. ESP8266) to directly control the LEDs. To be able to add your LED strips to LedFx your device will need to be capable of receiving data either via the E1.31 sACN protocol, or a generic (simple) UDP protocol. See below for a list of tested ESP8266 firmware that can be used with LedFx.</p>
+<p>Here is everything you need to get started with LedFx:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">A Computer (or Raspberry Pi) with Python 3.6 or 3.7 (<a class="reference external" href="https://www.anaconda.com/download/">Anaconda</a> is recommended on Windows)</p>
+</li>
+<li><p class="first">A E1.31 capable device with addressiable LEDs connected</p>
+<blockquote>
+<div><ul class="simple">
+<li>Commercial grade DMX controllers</li>
+<li>ESP8266 modules can be purchased for as little as $2 USD from Aliexpress</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p>Here is a list of tested ESP8266 firmware that work with LedFx:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="https://github.com/forkineye/ESPixelStick">ESPixelStick</a> is a great E1.31 based firmware</li>
+<li><a class="reference external" href="https://github.com/scottlawsonbc/audio-reactive-led-strip">Scott’s Audio Reactive Firmware</a> which inspired this project!</li>
+<li><a class="reference external" href="https://github.com/Aircoookie/WLED">WLED</a> has lots of firmware effects and supports E1.31 and UDP</li>
+</ul>
+</div></blockquote>
+<div class="section" id="windows-installation">
+<h2>Windows Installation<a class="headerlink" href="#windows-installation" title="Permalink to this headline">¶</a></h2>
+<p>To get started on Windows it is highly recommended that you use <a class="reference external" href="https://www.anaconda.com/download/">Anaconda</a> to make installation of Cython components easier.</p>
+<p>First, create a <a class="reference external" href="http://conda.pydata.org/docs/using/envs.html">conda virtual environment</a> (this step is optional but highly recommended)</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">ledfx</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">ledfx</span>
+</pre></div>
+</div>
+<p>Install LedFx and all the dependencies using pip and the conda package manager</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="n">add</span> <span class="n">channels</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">aubio</span> <span class="n">portaudio</span> <span class="n">pywin32</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">ledfx</span>
+</pre></div>
+</div>
+<p>Launch LedFx (with the ‘open-ui’ option to launch the browser):</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ledfx</span> <span class="o">--</span><span class="nb">open</span><span class="o">-</span><span class="n">ui</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="linux-installation">
+<h2>Linux Installation<a class="headerlink" href="#linux-installation" title="Permalink to this headline">¶</a></h2>
+<p>To install on Linux first ensure you have at least Python 3.6 (optionally use <a class="reference external" href="https://www.anaconda.com/download/">Anaconda</a>) installed.</p>
+<p>Install LedFx and all the dependencies using apt-get and pip:</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">portaudio19</span><span class="o">-</span><span class="n">dev</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">ledfx</span>
+<span class="n">ledfx</span> <span class="o">--</span><span class="nb">open</span><span class="o">-</span><span class="n">ui</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="device-configuration">
+<h2>Device Configuration<a class="headerlink" href="#device-configuration" title="Permalink to this headline">¶</a></h2>
+<p>Once you have LedFx running it’s time to add devices! Once you have a device setup with appropriate firmware for integration to LedFx nagivate the the ‘Device Management’ page and click the ‘+’ in the bottom right. Add the device using the following configuration based on your firmware:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><a class="reference external" href="https://github.com/forkineye/ESPixelStick">ESPixelStick</a></p>
+<blockquote>
+<div><ul class="simple">
+<li>Add the device as a E1.31 device. The default E1.31 settings should work fine.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><a class="reference external" href="https://github.com/scottlawsonbc/audio-reactive-led-strip">Scott’s Audio Reactive Firmware</a></p>
+<blockquote>
+<div><ul class="simple">
+<li>Add the device as a UDP</li>
+<li>Click ‘Additional Properties’ and check ‘Include Indexes’</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><a class="reference external" href="https://github.com/Aircoookie/WLED">WLED</a></p>
+<blockquote>
+<div><ul class="simple">
+<li>Enabled E1.31 support from the WLED web-interface</li>
+<li>Add the device as an E1.31 device</li>
+<li>If you have more than 170 LEDs click ‘Additional Properties’ and set the ‘Universe Size’ to 510</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<div class="section" id="table-of-contents">
+<h3>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Installation and Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#windows-installation">Windows Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#linux-installation">Linux Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#device-configuration">Device Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="developer.html">Development Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="developer.html#backend-development">Backend Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer.html#frontend-development">Frontend Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="developer.html#document-development">Document Development</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">REST API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-info">GET /api/info</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-config">GET /api/config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-log">GET /api/log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-schema-devices">GET /api/schema/devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-schema-effects">GET /api/schema/effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-devices">GET /api/devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#post-api-devices">POST /api/devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-devices-deviceid">GET /api/devices/&lt;deviceId&gt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#put-api-devices-deviceid">PUT /api/devices/&lt;deviceId&gt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#delete-api-devices-deviceid">DELETE /api/devices/&lt;deviceId&gt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-effects">GET /api/effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#post-api-effects">POST /api/effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#get-api-effects-effectid">GET /api/effects/&lt;effectId&gt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#put-api-effects-effectid">PUT /api/effects/&lt;effectId&gt;</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#delete-api-effects-effectid">DELETE /api/effects/&lt;effectId&gt;</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#websocket-api">WebSocket API</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="license">
+<h3>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h3>
+<p>LedFx is licensed under the MIT license.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="quickstart.html" class="btn btn-neutral float-right" title="Installation and Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
