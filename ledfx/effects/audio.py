@@ -4,7 +4,7 @@ import pyaudio
 from ledfx.effects import Effect, smooth
 import voluptuous as vol
 import ledfx.effects.mel as mel
-from ledfx.effects.math import ExpFilter
+from ledfx.effects.math import ExpFilter, ease_array
 from ledfx.events import GraphUpdateEvent
 import ledfx.effects.math as math
 from functools import lru_cache
@@ -48,9 +48,9 @@ class AudioInputSource(object):
     AUDIO_CONFIG_SCHEMA = vol.Schema({
         vol.Optional('sample_rate', default = 60): int,
         vol.Optional('mic_rate', default = 48000): int,
-        vol.Optional('fft_size', default = 1024): int,
+        vol.Optional('fft_size', default = 2048): int,
         vol.Optional('device_index', default = 0): int,
-        vol.Optional('pre_emphasis', default = 0.0): float,
+        vol.Optional('pre_emphasis', default = 0.2): float,
         vol.Optional('min_volume', default = -70.0): float
     }, extra=vol.ALLOW_EXTRA)
 
@@ -366,15 +366,13 @@ class MelbankInputSource(AudioInputSource):
         self.common_filter = ExpFilter(alpha_decay = 0.99, alpha_rise = 0.01)
 
     def _initialize_octaves(self, 
-                            n_notes=12*4,
-                            n_average=20,
+                            n_notes=12*2,
+                            n_average=10,
                             average_weighting_factor=1/10,
                             resolution=0.1,
-                            easing_slope=3.5,
-                            easing_lean=0.5,
-                            max_clip=0.2,
-                            min_peak_height=0.1,
-                            min_peak_seperation=3,
+                            easing_slope=4.5,
+                            easing_lean=0.4,
+                            max_clip=1.0,
                             freq_low=220,
                             freq_high=7040):
         """Initialise all the octave note detection variables
@@ -385,8 +383,6 @@ class MelbankInputSource(AudioInputSource):
         float   easing_slope                Sharpness of easing slope function applied to octave
         float   easing_lean                 Lean of easing slope
         float   max_clip                    Upper clipping value for octave data. Data rarely exceeds 0.5, usually around 0.2 max
-        float   min_peak_height             Min height of octave data to compute if peak (note)
-        int     min_peak_seperation         Min distance between peaks
         int     freq_low:                   Lower limit to use from fft
         int     freq_high:                  Upper limit to use from fft
 
@@ -402,7 +398,7 @@ class MelbankInputSource(AudioInputSource):
         self.min_peak_height = min_peak_height
         self.min_peak_seperation = min_peak_seperation
         freq_range = np.array([freq_low, freq_high])
-        # Linear scale of frequencies from 0 to MIC_RATE, with fftgrain.norm.size number of values
+        # Linear scale of frequencies from 0 to MIC_RATE, with fft.norm.size number of values
         self.lin_scale = np.linspace(0, self._config['mic_rate'], self._config["fft_size"]//2+1)
         # limits converted to octaves above and below 440Hz (A). Non-integer octaves rounded down.
         octave_range = np.log2(440/freq_range).astype(int)
@@ -419,12 +415,12 @@ class MelbankInputSource(AudioInputSource):
         # 1d array where indexes of prominent notes in the octave are stored.
         self.notes = np.array([], dtype=np.float64)
         # Exp smoothing filter for output
-        self.octave_smoothing = ExpFilter(np.tile(1e-1, self.n_notes), alpha_decay=0.2, alpha_rise=0.99)
+        self.octave_smoothing = ExpFilter(np.tile(1e-1, self.n_notes), alpha_decay=0.6, alpha_rise=0.99)
 
-    def octaves(self, fftgrain):
+    def octaves(self, fft):
         """Updates self.averaged_octave data"""
 
-        octaves = np.split(fftgrain.norm, self.octave_indexes)[1:-1]
+        octaves = np.split(fft.norm, self.octave_indexes)[1:-1]
         # Scale all octave arrays to be the length of the number of notes
         interpolated_octaves = []
         for octave in octaves:
@@ -435,7 +431,7 @@ class MelbankInputSource(AudioInputSource):
         # Add the freshly made octave data to the top of the stack
         self.rolling_octaves_stack[0] = interpolated_octaves
         # Calculate averages across octave, with newer octaves given more weight
-        self.averaged_octave = np.average(self.rolling_octaves_stack.mean(axis=1), axis=0, weights=self.average_weighting)
+        self.averaged_octave = np.average(self.rolling_octaves_stack.sum(axis=1), axis=0, weights=self.average_weighting)
         # Calculate the average height of octave peaks for cutoff
         average_cutoff = np.mean(self.averaged_octave)
         # Remove values below average
@@ -457,7 +453,7 @@ class MelbankInputSource(AudioInputSource):
         # Smooth output using exp filter
         self.averaged_octave = self.octave_smoothing.update(self.averaged_octave)
         # Make octave values only multiples of resolution eg [0.0, 0.7, 0.5] rather than [0.0021, 0.73824, 0.5234]
-        self.averaged_octave = self.averaged_octave - self.averaged_octave % self.resolution
+        self.averaged_octave -= self.averaged_octave % self.resolution
         # Detect notes in octave data by looking for peaks. Data is padded with 0 either end to allow end cases to be detected as peaks.
         # self.notes is an array containing indexes of peaks.
         # self.notes = detect_peaks(np.pad(self.averaged_octave,
@@ -480,7 +476,6 @@ class MelbankInputSource(AudioInputSource):
             self.mel_gain.update(np.max(smooth(raw_filter_banks, sigma=1.0)))
             filter_banks = raw_filter_banks / self.mel_gain.value
             filter_banks = self.mel_smoothing.update(filter_banks)
-            self.octaves(self.frequency_domain())
         else:
             raw_filter_banks = np.zeros(self._config['samples'])
             filter_banks = raw_filter_banks
@@ -490,9 +485,12 @@ class MelbankInputSource(AudioInputSource):
                 'raw', raw_filter_banks, np.array(self.melbank_frequencies)))
             self._ledfx.events.fire_event(GraphUpdateEvent(
                 'melbank', filter_banks, np.array(self.melbank_frequencies)))
-            self._ledfx.events.fire_event(GraphUpdateEvent(
-                'octave', self.averaged_octave*2.0, np.arange(self.n_notes)))
         return filter_banks
+
+    def calc_octaves(self):
+        self.octaves(self.frequency_domain())
+        self._ledfx.events.fire_event(GraphUpdateEvent(
+            'octave', self.averaged_octave*2.0, np.arange(self.n_notes)))
 
     def melbank_lows(self):
         return self.melbank()[:self.lows_index]

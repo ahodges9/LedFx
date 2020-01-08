@@ -32,13 +32,13 @@ class Slide2AudioEffect(AudioReactiveEffect, GradientEffect):
             self.temporal_filter = TemporalFilter(self.pixels, rise=self._config["responsiveness"], decay=0.1)
 
         # Populate octave data
-        data.melbank()
+        data.calc_octaves()
         # Get octave data
         octave = data.averaged_octave
         # Split octave into bins, find max value per bin
         maxed_bins = [i.max() for i in np.array_split(octave, self._config["resolution"])]
         # Get colours from band indexes (scaled between 0 and 1)
-        self.colours = np.array([self.get_gradient_color(i) for i in np.linspace(0, 1, self._config["resolution"])]).astype(int)
+        self.colours = np.array([self.get_gradient_color(i) for i in np.linspace(0, self.pixel_count-1, self._config["resolution"]).astype(int)])
         # Update colour bands with max from each octave bin
         self.bands = self.band_smoothing.update(maxed_bins)
         total_height = self.bands.sum()
