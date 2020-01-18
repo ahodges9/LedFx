@@ -23,7 +23,7 @@ class HttpServer(object):
         self.register_routes()
 
         if host is None:
-            host = socket.gethostbyname(socket.gethostname())
+            host = '127.0.0.1'
         if port is None:
             port = 8888
 
