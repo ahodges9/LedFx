@@ -43,6 +43,7 @@ class PresetCard extends React.Component {
       <Card>
         <CardContent>
           <h3>{preset.name}</h3>
+          <p>{preset.triggerSongs}</p>
           { preset.devices && <PresetConfigTable devices ={ preset.devices }/> }
         </CardContent>
         <CardActions className={classes.submitControls}>

@@ -8,10 +8,11 @@ export const GET_PRESETS = "GET_PRESETS"
 export const ACTIVATE_PRESET = "ACTIVATE_PRESET"
 export const RENAME_PRESET = "RENAME_PRESET"
 
-export function addPreset(name) {
+export function addPreset(name, triggerSongs) {
   return dispatch => {
     const data = {
-      name: name
+      name: name,
+      triggerSongs: triggerSongs
     };
     return fetch(`${apiUrl}/presets`, {
       method: "POST",

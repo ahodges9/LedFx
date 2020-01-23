@@ -25,6 +25,7 @@ const useStyles = makeStyles({
 const AddPresetCard = ({ presets, addPreset }) =>  {
 
   const [ name, setName ] = useState('')
+  const [ triggerSongs, setTriggerSongs ] = useState('')
   const classes = useStyles()
 
   return (
@@ -39,6 +40,11 @@ const AddPresetCard = ({ presets, addPreset }) =>  {
               label="Preset Name"
               onChange={(e) => setName(e.target.value)}
             />
+            <TextField
+              id="presetTriggerSongsInput"
+              label="Spotify Trigger Songs"
+              onChange={(e) => setTriggerSongs(e.target.value)}
+            />
             <Button
               className = {classes.button}
               color="primary"
@@ -46,7 +52,7 @@ const AddPresetCard = ({ presets, addPreset }) =>  {
               aria-label="Save"
               disabled = {validateInput(name, presets)} 
               variant = "contained"
-              onClick = {() => addPreset(name)}
+              onClick = {() => addPreset(name, triggerSongs)}
             >
               Save
             </Button>
@@ -64,7 +70,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  addPreset: (presetName) => dispatch(addPreset(presetName))
+  addPreset: (presetName, triggerSongs) => dispatch(addPreset(presetName, triggerSongs)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddPresetCard);

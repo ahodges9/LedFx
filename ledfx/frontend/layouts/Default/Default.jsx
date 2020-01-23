@@ -19,6 +19,7 @@ import cyan from "@material-ui/core/colors/cyan";
 import green from "@material-ui/core/colors/green";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
+import SpotifyBar from "../../components/SpotifyBar/SpotifyBar.jsx";
 
 const defaultTheme = createMuiTheme({
   palette: {
@@ -102,6 +103,7 @@ class DefaultLayout extends React.Component {
               })}
             </Switch>
           </div>
+          <SpotifyBar />
         </MuiThemeProvider>
       </div>
     );

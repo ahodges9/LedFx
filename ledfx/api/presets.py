@@ -111,10 +111,12 @@ class PresetsEndpoint(RestEndpoint):
             response = { 'status' : 'failed', 'reason': 'Required attribute "preset_name" was not provided' }
             return web.Response(text=json.dumps(response), status=500)
 
+        preset_trigger_songs = data.get('triggerSongs')
         preset_id = generate_id(preset_name)
 
         preset_config = {}
         preset_config['name'] = preset_name
+        preset_config['triggerSongs'] = preset_trigger_songs
         preset_config['devices'] = {}
         for device in self._ledfx.devices.values():
             effect = {}
