@@ -1,11 +1,16 @@
 import React, { Component } from 'react'
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
+import fetch from "cross-fetch";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import { AppBar, Button, Grid } from '@material-ui/core';
 import {drawerWidth} from "frontend/assets/jss/style.jsx";
 import TrackInfo from './TrackInfo';
+
+import activatePreset from 'frontend/actions';
+
+const apiUrl = window.location.protocol + "//" + window.location.host + "/api";
 
 const styles = theme => ({
     appBar: {
@@ -49,13 +54,13 @@ class SpotifyBar extends Component {
         var hash = window.location.hash.substr(1)
         console.log(hash)
         const accessToken = hash.split('&')[0].slice(13)
-        console.log(accessToken)
         return this.setState({
             token: accessToken
         }) 
     }
 
     initializePlayer() {
+        // Make sure the 3rd-party Spotify script has loaded 
         window.onSpotifyWebPlaybackSDKReady = () => {
             const token = this.state.token;
             const player = new Spotify.Player({
@@ -64,7 +69,8 @@ class SpotifyBar extends Component {
                     cb(token);  
                 }
             });
-          
+
+            // Set up the web player
             player.addListener('initialization_error', ({ message }) => { console.error(message) });
             player.addListener('authentication_error', ({ message }) => { console.error(message) });
             player.addListener('account_error', ({ message }) => { console.error(message) });
@@ -72,45 +78,67 @@ class SpotifyBar extends Component {
             player.addListener('ready', ({ device_id }) => {console.log('Ready with Device ID', device_id)});
             player.addListener('not_ready', ({ device_id }) => {console.log('Device ID has gone offline', device_id)});
 
+            // Listen
             player.addListener('player_state_changed', state => { this.handlePlayerStateChange(state) });
 
             player.connect();
         }
     }
 
+
     handlePlayerStateChange(state) {
         this.setState({playbackState: state.track_window.current_track})
-        console.log(this.state.playbackState)
+
+        fetch(`${apiUrl}/presets`)
+            .then((response) => {
+                return response.json();
+            })
+            .then((json) => {
+                let allPresets = Object.entries(json.presets);
+                allPresets.forEach(element => {
+                    if (element[1].triggerSongs) {
+                        if (element[1].triggerSongs == this.state.playbackState.name){
+                            
+                            console.log('current track matches preset for:', element[1].name )
+                            const data = {
+                                id: element[1].id,
+                                action: 'activate'
+                              };
+                              fetch(`${apiUrl}/presets`, {
+                                method: "PUT",
+                                headers: {
+                                  Accept: "application/json",
+                                  "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify(data)
+                              })                         
+                        }
+                    }
+                })
+        });
         return 
     }
 
     componentDidMount() {
-
         this.getAccessToken();
-        console.log(this.state.token, "inside did mount")
         this.initializePlayer();
     }
 
     render() {
-        const {classes} = this.props;
-        console.log(this.state.token, 'inside render')
+        const {classes, activatePreset} = this.props;
         if (this.state.token === "") {
             return (
                 <AppBar className={classes.appBar}>
-                    <Grid container direction="row" justify="space-evenly" alignItems="center">
-                        <Grid item xs>
-                            <Button  variant="contained" style={{backgroundColor: '#1ED760', color: '#FFFFFA'}}className={classes.spotifyLogin} onClick={this.spotifyLogin}>Log in with Spotify</Button>
-                        </Grid>
+                    <Grid container direction="row" justify="center" alignItems="center">
+                        <Button  variant="contained" style={{backgroundColor: '#1ED760', color: '#FFFFFA'}}className={classes.spotifyLogin} onClick={this.spotifyLogin}>Log in with Spotify</Button>   
                     </Grid>
                 </AppBar>
             )
         } else {
             return (
                 <AppBar className={classes.appBar}>
-                    <Grid container direction="row" justify="space-evenly" alignItems="center">
-                        <Grid item xs>
-                            <TrackInfo />
-                        </Grid>
+                    <Grid container direction="row" justify="center" alignItems="center">  
+                        <TrackInfo />
                     </Grid>
                 </AppBar>
             )
@@ -121,4 +149,9 @@ class SpotifyBar extends Component {
 SpotifyBar.propTypes = {
   classes: PropTypes.object.isRequired
 }
-export default connect(null,null)(withStyles(styles)(SpotifyBar));
+
+const mapDispatchToProps = (dispatch) => ({
+    activatePreset: (presetId) => dispatch(activatePreset(presetId))
+})
+
+export default connect(null, mapDispatchToProps)(withStyles(styles)(SpotifyBar));

@@ -28,10 +28,10 @@ class TrackInfo extends Component {
                     />
                     <CardContent className={classes.content}>
                         <Typography component="h7" variant="h7">
-                            Song Title
+                            Hi
                         </Typography>
                         <Typography variant="subtitle2" color="textSecondary">
-                            Album Title
+                            hello
                         </Typography>
                     </CardContent>
                 </Card>

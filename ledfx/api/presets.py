@@ -116,6 +116,7 @@ class PresetsEndpoint(RestEndpoint):
 
         preset_config = {}
         preset_config['name'] = preset_name
+        preset_config['id'] = preset_id
         preset_config['triggerSongs'] = preset_trigger_songs
         preset_config['devices'] = {}
         for device in self._ledfx.devices.values():
