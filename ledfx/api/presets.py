@@ -53,7 +53,7 @@ class PresetsEndpoint(RestEndpoint):
             response = { 'status' : 'failed', 'reason': 'Required attribute "action" was not provided' }
             return web.Response(text=json.dumps(response), status=500)
 
-        if action not in ['activate', 'rename']:
+        if action not in ['activate', 'rename', 'add_trigger']:
             response = { 'status' : 'failed', 'reason': 'Invalid action "{}"'.format(action) }
             return web.Response(text=json.dumps(response), status=500)
 
@@ -86,7 +86,17 @@ class PresetsEndpoint(RestEndpoint):
                     device.set_effect(effect)
                 else:
                     device.clear_effect()
+        
+        elif action == "add_trigger":
+            trigger_song = data.get('triggerSong')
+            trigger_position = data.get('triggerPosition')
 
+            if trigger_song is None:
+                response = { 'status' : 'failed', 'reason': 'Required attribute "song" was not provided' }
+                return web.Response(text=json.dumps(response), status=500)
+
+            self._ledfx.config['presets'][preset_id]['triggers'][trigger_song] = trigger_position
+            
         elif action == "rename":
             name = data.get('name')
             if name is None:
@@ -111,13 +121,12 @@ class PresetsEndpoint(RestEndpoint):
             response = { 'status' : 'failed', 'reason': 'Required attribute "preset_name" was not provided' }
             return web.Response(text=json.dumps(response), status=500)
 
-        preset_trigger_songs = data.get('triggerSongs')
         preset_id = generate_id(preset_name)
 
         preset_config = {}
         preset_config['name'] = preset_name
         preset_config['id'] = preset_id
-        preset_config['triggerSongs'] = preset_trigger_songs
+        preset_config['triggers'] = {}
         preset_config['devices'] = {}
         for device in self._ledfx.devices.values():
             effect = {}

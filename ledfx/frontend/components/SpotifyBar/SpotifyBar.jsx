@@ -8,7 +8,8 @@ import { AppBar, Button, Grid } from '@material-ui/core';
 import {drawerWidth} from "frontend/assets/jss/style.jsx";
 import TrackInfo from './TrackInfo';
 
-import activatePreset from 'frontend/actions';
+import {activatePreset} from 'frontend/actions';
+import { AddTrigger } from './AddTrigger';
 
 const apiUrl = window.location.protocol + "//" + window.location.host + "/api";
 
@@ -16,26 +17,37 @@ const styles = theme => ({
     appBar: {
         backgroundColor: '#333333',
         top: 'auto',
-        bottom: 0,
+        bottom: 0,   
+        boxShadow: 'none',
         [theme.breakpoints.up('md')]: {
-            marginLeft: drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`
+            left: `calc(${drawerWidth}px - 2px)`,
+            width: `calc(100% - ${drawerWidth}px + 1vw)`
         }
     },
+    loginBar: {
+        paddingTop: '2vh',
+        paddingBottom: '2vh'
+    },
     spotifyLogin : {
-        color:  '#333333'
+        color:  '#333333',
     }
 })
 
 class SpotifyBar extends Component {
-
-    state = {
-        token: null,
-        playbackState: null
+    constructor(props) {
+        super(props);
+        this.state = {
+            token: null,
+            trackState: null,
+            trackPosition: 0,
+            trackDuration: null,
+            trackPaused: true
+        }
     }
     
 
     spotifyLogin() {
+        // Basically just send them to the Spotify login page with required scopes and our app ID
         let scopes = encodeURIComponent('streaming user-read-email user-read-private');
         let client_id = 'a4d6df0f4b0047c2b23216c46bfc0f27'
         let redirect_uri = 'http://127.0.0.1:8888/dashboard/'
@@ -51,6 +63,7 @@ class SpotifyBar extends Component {
     }
 
     getAccessToken() {
+        // Grab the access token from Spotify after completing Spotify login
         var hash = window.location.hash.substr(1)
         console.log(hash)
         const accessToken = hash.split('&')[0].slice(13)
@@ -78,7 +91,7 @@ class SpotifyBar extends Component {
             player.addListener('ready', ({ device_id }) => {console.log('Ready with Device ID', device_id)});
             player.addListener('not_ready', ({ device_id }) => {console.log('Device ID has gone offline', device_id)});
 
-            // Listen
+            // Listen for currently playing song changes
             player.addListener('player_state_changed', state => { this.handlePlayerStateChange(state) });
 
             player.connect();
@@ -87,31 +100,41 @@ class SpotifyBar extends Component {
 
 
     handlePlayerStateChange(state) {
-        this.setState({playbackState: state.track_window.current_track})
+        // Set playback state to a Spotify WebPlaybackTrack -> https://developer.spotify.com/documentation/web-playback-sdk/reference/#object-web-playback-track
+        this.setState({trackState: state.track_window.current_track})
+        this.setState({trackPosition: state.position})
+        this.setState({trackPaused: state.paused})
 
+        console.log(state.position)
+
+        // Fetch duration of current song. Web player doesn't provide this, so we need to use the Spotify Web API.
+        fetch(`https://api.spotify.com/v1/tracks?ids=${this.state.trackState.id}`, {
+            headers: {
+                'Authorization': `Bearer ${this.state.token}` 
+            }
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((json) => {
+            this.state.trackDuration = json.tracks[0].duration_ms
+        })
+
+        // Fetch all presets
         fetch(`${apiUrl}/presets`)
             .then((response) => {
                 return response.json();
             })
             .then((json) => {
+
+                // Turn the presets object into a bunch of arrays
                 let allPresets = Object.entries(json.presets);
+
+                // Loop through the presets and look for a match between trigger songs and current playback song
                 allPresets.forEach(element => {
                     if (element[1].triggerSongs) {
-                        if (element[1].triggerSongs == this.state.playbackState.name){
-                            
-                            console.log('current track matches preset for:', element[1].name )
-                            const data = {
-                                id: element[1].id,
-                                action: 'activate'
-                              };
-                              fetch(`${apiUrl}/presets`, {
-                                method: "PUT",
-                                headers: {
-                                  Accept: "application/json",
-                                  "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify(data)
-                              })                         
+                        if (element[1].triggerSongs == this.state.trackState.name){
+                            this.props.activatePreset(element[1].id)                        
                         }
                     }
                 })
@@ -125,11 +148,12 @@ class SpotifyBar extends Component {
     }
 
     render() {
-        const {classes, activatePreset} = this.props;
+        const {classes} = this.props;
+
         if (this.state.token === "") {
             return (
                 <AppBar className={classes.appBar}>
-                    <Grid container direction="row" justify="center" alignItems="center">
+                    <Grid container direction="row" justify="center" alignItems="center" className={classes.loginBar}>
                         <Button  variant="contained" style={{backgroundColor: '#1ED760', color: '#FFFFFA'}}className={classes.spotifyLogin} onClick={this.spotifyLogin}>Log in with Spotify</Button>   
                     </Grid>
                 </AppBar>
@@ -138,7 +162,7 @@ class SpotifyBar extends Component {
             return (
                 <AppBar className={classes.appBar}>
                     <Grid container direction="row" justify="center" alignItems="center">  
-                        <TrackInfo />
+                        <AddTrigger />
                     </Grid>
                 </AppBar>
             )

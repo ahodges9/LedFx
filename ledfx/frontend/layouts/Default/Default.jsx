@@ -20,6 +20,7 @@ import green from "@material-ui/core/colors/green";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 import SpotifyBar from "../../components/SpotifyBar/SpotifyBar.jsx";
+import { AddTrigger } from "../../components/SpotifyBar/AddTrigger.jsx";
 
 const defaultTheme = createMuiTheme({
   palette: {
@@ -104,6 +105,7 @@ class DefaultLayout extends React.Component {
             </Switch>
           </div>
           <SpotifyBar />
+          <AddTrigger />
         </MuiThemeProvider>
       </div>
     );

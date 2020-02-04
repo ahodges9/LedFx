@@ -4,6 +4,7 @@ import {
   
   const sidebarStyle = theme => ({
     drawerPaper: {
+      borderRight: 0,
       width: drawerWidth,
       [theme.breakpoints.up('md')]: {
         width: drawerWidth,

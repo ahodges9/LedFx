@@ -66,7 +66,7 @@ class DeviceView extends React.Component {
     if (device)
     {
       return (
-        <Grid container direction="row" spacing={4}>
+        <Grid container direction="row" spacing={2}>
           {renderPixelGraph(device, effect)}
           <Grid item xs={12}>
             <Card>

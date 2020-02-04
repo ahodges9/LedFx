@@ -51,7 +51,7 @@ class DashboardView extends React.Component {
     return (
       <div>
 
-        <Grid container direction="row" spacing={4}>
+        <Grid container direction="row" spacing={2}>
           {
             Object.keys(devicesById).map(id => {                      
               return (

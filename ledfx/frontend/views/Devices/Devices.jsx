@@ -22,9 +22,7 @@ const styles = theme => ({
     overflowX: "auto"
   },
   button: {
-    position: "absolute",
-    bottom: theme.spacing.unit * 2,
-    right: theme.spacing.unit * 2
+
   },
   dialogButton: {
     float: "right"
@@ -52,7 +50,7 @@ class DevicesView extends React.Component {
     const { classes, schemas } = this.props;
     return (
       <div>
-        <Grid container spacing={16}>
+        <Grid container spacing={16} justify="center" align="center">
           <Grid item xs={12} sm={12} md={12}>
             <Card>
               <CardContent>
@@ -60,16 +58,16 @@ class DevicesView extends React.Component {
               </CardContent>
             </Card>
           </Grid>
+          <Button
+            variant="fab"
+            color="primary"
+            aria-label="Add"
+            className={classes.button}
+            onClick={this.openAddDeviceDialog}
+          >
+            <AddIcon />
+          </Button>
         </Grid>
-        <Button
-          variant="fab"
-          color="primary"
-          aria-label="Add"
-          className={classes.button}
-          onClick={this.openAddDeviceDialog}
-        >
-          <AddIcon />
-        </Button>
         <DeviceConfigDialog
           open={this.state.addDialogOpened}
           onClose={this.closeAddDeviceDialog}

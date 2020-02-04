@@ -7,12 +7,12 @@ export const DELETE_PRESET = "DELETE_PRESET"
 export const GET_PRESETS = "GET_PRESETS"
 export const ACTIVATE_PRESET = "ACTIVATE_PRESET"
 export const RENAME_PRESET = "RENAME_PRESET"
+export const ADD_TRIGGER = "ADD_TRIGGER"
 
-export function addPreset(name, triggerSongs) {
+export function addPreset(name) {
   return dispatch => {
     const data = {
-      name: name,
-      triggerSongs: triggerSongs
+      name: name
     };
     return fetch(`${apiUrl}/presets`, {
       method: "POST",
@@ -115,4 +115,28 @@ export function getPresets() {
           receivedAt: Date.now()
       }))
   }
+}
+
+export function addTrigger(id, triggerSong, triggerPosition) {
+  return dispatch => {
+    const data = {
+      id: id,
+      action: 'add_trigger',
+      triggerSong: triggerSong,
+      triggerPosition: triggerPosition
+    };
+    fetch(`${apiUrl}/presets`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response => response.json())
+      .then(json => dispatch({
+        type: ADD_TRIGGER,
+        response: json
+      }));
+  };
 }
