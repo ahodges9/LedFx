@@ -4,12 +4,13 @@ import { connect } from "react-redux";
 import fetch from "cross-fetch";
 
 import withStyles from "@material-ui/core/styles/withStyles";
-import { AppBar, Button, Grid } from '@material-ui/core';
+import { AppBar, Button, Grid, Typography } from '@material-ui/core';
 import {drawerWidth} from "frontend/assets/jss/style.jsx";
 import TrackInfo from './TrackInfo';
+import AddTrigger  from './AddTrigger';
 
-import {activatePreset} from 'frontend/actions';
-import { AddTrigger } from './AddTrigger';
+import {getPresets} from 'frontend/actions';
+import activatePreset from 'frontend/actions';
 
 const apiUrl = window.location.protocol + "//" + window.location.host + "/api";
 
@@ -30,7 +31,10 @@ const styles = theme => ({
     },
     spotifyLogin : {
         color:  '#333333',
-    }
+    },
+    connectedMessage: {
+        color: "#FFFFFF"
+    },
 })
 
 class SpotifyBar extends Component {
@@ -40,14 +44,12 @@ class SpotifyBar extends Component {
             token: null,
             trackState: null,
             trackPosition: 0,
-            trackDuration: null,
-            trackPaused: true
+            isPaused: true
         }
     }
     
 
     spotifyLogin() {
-        // Basically just send them to the Spotify login page with required scopes and our app ID
         let scopes = encodeURIComponent('streaming user-read-email user-read-private');
         let client_id = 'a4d6df0f4b0047c2b23216c46bfc0f27'
         let redirect_uri = 'http://127.0.0.1:8888/dashboard/'
@@ -100,49 +102,13 @@ class SpotifyBar extends Component {
 
 
     handlePlayerStateChange(state) {
-        // Set playback state to a Spotify WebPlaybackTrack -> https://developer.spotify.com/documentation/web-playback-sdk/reference/#object-web-playback-track
         this.setState({trackState: state.track_window.current_track})
         this.setState({trackPosition: state.position})
-        this.setState({trackPaused: state.paused})
+        this.setState({isPaused: state.paused})
 
-        console.log(state.position)
-
-        // Fetch duration of current song. Web player doesn't provide this, so we need to use the Spotify Web API.
-        fetch(`https://api.spotify.com/v1/tracks?ids=${this.state.trackState.id}`, {
-            headers: {
-                'Authorization': `Bearer ${this.state.token}` 
-            }
-        })
-        .then((response) => {
-            return response.json();
-        })
-        .then((json) => {
-            this.state.trackDuration = json.tracks[0].duration_ms
-        })
-
-        // Fetch all presets
-        fetch(`${apiUrl}/presets`)
-            .then((response) => {
-                return response.json();
-            })
-            .then((json) => {
-
-                // Turn the presets object into a bunch of arrays
-                let allPresets = Object.entries(json.presets);
-
-                // Loop through the presets and look for a match between trigger songs and current playback song
-                allPresets.forEach(element => {
-                    if (element[1].triggerSongs) {
-                        if (element[1].triggerSongs == this.state.trackState.name){
-                            this.props.activatePreset(element[1].id)                        
-                        }
-                    }
-                })
-        });
-        return 
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.getAccessToken();
         this.initializePlayer();
     }
@@ -153,29 +119,44 @@ class SpotifyBar extends Component {
         if (this.state.token === "") {
             return (
                 <AppBar className={classes.appBar}>
-                    <Grid container direction="row" justify="center" alignItems="center" className={classes.loginBar}>
+                    <Grid container justify="center" alignItems="center" className={classes.loginBar}>
                         <Button  variant="contained" style={{backgroundColor: '#1ED760', color: '#FFFFFA'}}className={classes.spotifyLogin} onClick={this.spotifyLogin}>Log in with Spotify</Button>   
                     </Grid>
                 </AppBar>
             )
-        } else {
+        } else if (this.state.trackState == null) {
             return (
                 <AppBar className={classes.appBar}>
-                    <Grid container direction="row" justify="center" alignItems="center">  
-                        <AddTrigger />
+                    <Grid container justify='center'>
+                        <Typography component="h3" className={classes.connectedMessage}>
+                            Select "LedFX Window" using Spotify Connect!
+                        </Typography>
+                    </Grid>
+                </AppBar>      
+            ) 
+        }   else return (
+                <AppBar className={classes.appBar}>
+                    <Grid container direction='row' justify="center" alignItems="center">
+                        <Grid item xs='4'>
+                            <TrackInfo trackState={this.state.trackState} position={this.state.trackPosition} isPaused={this.state.isPaused}/>
+                        </Grid>
+                        <Grid item xs='8'>
+                            <AddTrigger trackState={this.state.trackState} position={this.state.trackPosition} />
+                        </Grid>
                     </Grid>
                 </AppBar>
             )
         }   
     }
-}
+
 
 SpotifyBar.propTypes = {
   classes: PropTypes.object.isRequired
 }
 
 const mapDispatchToProps = (dispatch) => ({
-    activatePreset: (presetId) => dispatch(activatePreset(presetId))
+    activatePreset: (presetId) => dispatch(activatePreset(presetId)),
+    getPresets: () => dispatch(getPresets())
 })
 
 export default connect(null, mapDispatchToProps)(withStyles(styles)(SpotifyBar));

@@ -105,7 +105,6 @@ class DefaultLayout extends React.Component {
             </Switch>
           </div>
           <SpotifyBar />
-          <AddTrigger />
         </MuiThemeProvider>
       </div>
     );

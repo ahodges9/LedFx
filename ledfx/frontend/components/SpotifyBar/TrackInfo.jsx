@@ -1,64 +1,26 @@
 import React, { Component } from 'react'
-import PropTypes from "prop-types";
 import { connect } from "react-redux";
 
 import withStyles from "@material-ui/core/styles/withStyles";
-import { Grid, Card, CardContent, Typography, Slider, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Checkbox, Button } from '@material-ui/core'
+import { Grid } from '@material-ui/core'
 
-import { addTrigger } from 'frontend/actions';
-
-const apiUrl = window.location.protocol + "//" + window.location.host + "/api";
+import {getPresets, activatePreset} from 'frontend/actions'
 
 const styles = theme => ({
-    card: {
-        display: "flex",
-        backgroundSize: "contain",
-        width: "80%",
-        backgroundColor: '#333333',
-        boxShadow: 'none'
-    },
-    progressSlider: {
-        margin: '5vh',
-        marginBottom: '2vh',
-    },
-    content: {
-        width: '30%',
-        padding: '1px',
-    },
-    connectedMessage: {
-        color: "#FFFFFF"
-    },
-    trackDescription: {
-        height: '100%',
-        display: 'flex',
-        alignItems: 'start',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        marginLeft: '1vw'
-    },
-    albumName: {
-        margin: 0,
-        color: '#FFF'
+    outer: {
+        paddingLeft: '1vw'
     },
     songTitle: {
-        textAlign: 'center',
-        margin: 0,
-        color: '#FFFFFF'
+        color: '#1ED760',
+        marginBottom: 2
     },
-    presetMenu: {
-        width: '40%',
+    albumName: {
+        marginTop: 0,
+        color: '#1ED760'
     },
-    presetMenuText: {
-        color: '#FFFFFF'
-    },
-    checkboxText: {
-        color: '#FFFFFF',
-        size: '4vh'
-    },
-    button: {
-        backgroundColor: '#1ED760',
-        paddingTop: '1px',
-        paddingBottom: '1px'
+    positionText: {
+        color: '#1ED760',
+        margin: 0
     }
 })
 
@@ -66,114 +28,56 @@ class TrackInfo extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            position: 0,
-            paused: false,
-            presetsObject: null,
-            presetSelect: '',
-            positionCheck: false
+            trackName: ''
         }
-        fetch(`${apiUrl}/presets`)
-            .then((response) => {
-                return response.json();
+    };
+
+    async checkForTriggers() {
+        Object.entries(this.props.presets).forEach((preset) => {
+            let presetID = preset[1].name
+            let triggersObject = preset[1].triggers
+            Object.keys(triggersObject).forEach( (song) => {
+                if (this.props.trackState.name == song) {
+                    this.props.activatePreset(presetID)
+                    console.log('activated', presetID)
+                }
             })
-            .then((json) => {
-                this.state.presetsObject = json.presets
         })
-    };
-
-    handleAddToPreset = (id, triggerSong, triggerPosition) => {
-        console.log(id, triggerSong, triggerPosition)
-        this.props.dispatch(addTrigger(id, triggerSong, triggerPosition))
-    };
-
-    handlePresetChange(e) {
-        this.setState({presetSelect: e.target.value})
     }
 
-    handleCheckChange(e) {
-        this.setState({positionCheck: e.target.checked})
+    componentDidMount() {
+        this.props.getPresets()
+    }
+
+    componentDidUpdate() {
+        this.checkForTriggers()
     }
 
     render() {
-        const {classes, addTrigger} = this.props
-        this.handlePresetChange = this.handlePresetChange.bind(this)
-        this.handleCheckChange = this.handleCheckChange.bind(this)
+        const {classes, trackState, position, isPaused} = this.props
 
-        this.state.paused = this.props.songPaused
-
-        if (this.props.songState == null) {
-            return (
-                <Typography component="h3" className={classes.connectedMessage}>
-                    Select "LedFX Window" using Spotify Connect!
-                </Typography>      
-            )
-        } else {
-            return (
-                <Grid container direction="row" alignItems="center" justify="center" className={classes.playbackGrid}>
-                    <Card className={classes.card}>
-                        <CardContent className={classes.content}>
-                            <div className={classes.trackDescription}>
-                                <h4 className={classes.songTitle}>{this.props.songState.name}</h4>
-                                <p className={classes.albumName}>{this.props.songState.album.name}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <FormControl style={{display: 'flex', flexDirection: 'row'}}>
-                        <InputLabel className={classes.presetMenuText}>Preset</InputLabel>
-                        <Select className={classes.presetMenu}
-                            value={this.state.presetSelect || ''}
-                            onChange={this.handlePresetChange}
-                            style={{color: 'white'}}
-                        >
-                            {renderPresetMenu(this.state.presetsObject)}
-                        </Select>
-                        <FormControlLabel
-                            control={<Checkbox 
-                                        style={{color: '#00BCD4'}}
-                                        onChange={this.handleCheckChange}
-                                    />}
-                            label="Song Position"
-                            labelPlacement="end"
-                            className={classes.presetMenuText}
-                        />
-                        <Button
-                            onClick={() => this.handleAddToPreset(this.state.presetSelect, this.props.songState.name, this.props.songPosition)}
-                            className={classes.button}
-                            type="submit"
-                            variant="contained"
-                        >Add</Button>
-                    </FormControl>
-                </Grid>
-            )
-        }
-    }
-}
-
-const renderPresetMenu = (presets) => {
-
-    const availablePresets = Object.keys(presets);
-
-    return availablePresets.map(name => {
         return (
-            <MenuItem 
-                key={name}
-                value={name}
-            >
-                {name}
-            </MenuItem>
+            <Grid container direction='row' className={classes.outer}>
+                <Grid item xs='9' container direction='column' justify='center' alignItems='flex-start'>
+                    <h4 className={classes.songTitle}>{trackState.name}</h4>
+                    <p className={classes.albumName}>{trackState.album.name}</p>
+                </Grid> 
+                <Grid item xs='3' container direction='column' justify='center' alignItems='flex-end'>
+                    <p className={classes.positionText}>Position</p>
+                    <p className={classes.positionText}>{position}</p>
+                </Grid>
+            </Grid>
         )
-    })
-} 
-
-TrackInfo
-.propTypes = {
-
-  classes: PropTypes.object.isRequired
+    }
 }
 
 const mapStateToProps = state => ({ 
     presets: state.presets 
-  })
+})
 
-export default connect(mapStateToProps, null)(withStyles(styles)(TrackInfo));
+const mapDispatchToProps = (dispatch) => ({
+    getPresets: () => dispatch(getPresets()),
+    activatePreset: (id) => dispatch(activatePreset(id))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(TrackInfo));

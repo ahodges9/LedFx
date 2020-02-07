@@ -88,14 +88,14 @@ class PresetsEndpoint(RestEndpoint):
                     device.clear_effect()
         
         elif action == "add_trigger":
-            trigger_song = data.get('triggerSong')
-            trigger_position = data.get('triggerPosition')
+            song = data.get('song')
+            position = data.get('position')
 
-            if trigger_song is None:
+            if song is None:
                 response = { 'status' : 'failed', 'reason': 'Required attribute "song" was not provided' }
                 return web.Response(text=json.dumps(response), status=500)
 
-            self._ledfx.config['presets'][preset_id]['triggers'][trigger_song] = trigger_position
+            self._ledfx.config['presets'][preset_id]['triggers'][song] = position
             
         elif action == "rename":
             name = data.get('name')

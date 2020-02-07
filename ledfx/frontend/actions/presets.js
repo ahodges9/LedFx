@@ -117,13 +117,13 @@ export function getPresets() {
   }
 }
 
-export function addTrigger(id, triggerSong, triggerPosition) {
+export function addTrigger(id, song, position) {
   return dispatch => {
     const data = {
       id: id,
       action: 'add_trigger',
-      triggerSong: triggerSong,
-      triggerPosition: triggerPosition
+      song: song,
+      position: position
     };
     fetch(`${apiUrl}/presets`, {
       method: "PUT",
