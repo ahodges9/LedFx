@@ -4,15 +4,13 @@ import { connect } from "react-redux";
 import fetch from "cross-fetch";
 
 import withStyles from "@material-ui/core/styles/withStyles";
-import { AppBar, Button, Grid, Typography } from '@material-ui/core';
+import { AppBar, Button, Grid, Typography, Switch, FormControlLabel } from '@material-ui/core';
 import {drawerWidth} from "frontend/assets/jss/style.jsx";
 import TrackInfo from './TrackInfo';
 import AddTrigger  from './AddTrigger';
 
 import {getPresets} from 'frontend/actions';
 import activatePreset from 'frontend/actions';
-
-const apiUrl = window.location.protocol + "//" + window.location.host + "/api";
 
 const styles = theme => ({
     appBar: {
@@ -42,12 +40,21 @@ class SpotifyBar extends Component {
         super(props);
         this.state = {
             token: null,
+            showSpotify: true,
             trackState: null,
             trackPosition: 0,
             isPaused: true
         }
+        this.toggleSpotify = this.toggleSpotify.bind(this);
     }
     
+    toggleSpotify() {
+        if (this.state.showSpotify == true) {
+            this.setState({showSpotify: false})
+        } else {
+            this.setState({showSpotify : true})
+        }
+    }
 
     spotifyLogin() {
         let scopes = encodeURIComponent('streaming user-read-email user-read-private');
@@ -105,7 +112,6 @@ class SpotifyBar extends Component {
         this.setState({trackState: state.track_window.current_track})
         this.setState({trackPosition: state.position})
         this.setState({isPaused: state.paused})
-
     }
 
     componentDidMount = () => {
@@ -134,13 +140,24 @@ class SpotifyBar extends Component {
                     </Grid>
                 </AppBar>      
             ) 
-        }   else return (
+        }   else if (this.state.showSpotify == false) {
+            return (
+                <AppBar className={classes.appBar} style={{width:'12vw'}}>
+                    <Grid container justify='center' alignItems='center'>
+                        <Switch checked={this.state.showSpotify} onChange={() => this.toggleSpotify()}/>
+                    </Grid>
+                </AppBar>
+            )
+        } else return (
                 <AppBar className={classes.appBar}>
                     <Grid container direction='row' justify="center" alignItems="center">
-                        <Grid item xs='4'>
+                        <Grid item container xs='12' sm='1' justify='center'>
+                            <Switch checked={this.state.showSpotify} onChange={() => this.toggleSpotify()}/>
+                        </Grid>
+                        <Grid item xs='12' sm='3'>
                             <TrackInfo trackState={this.state.trackState} position={this.state.trackPosition} isPaused={this.state.isPaused}/>
                         </Grid>
-                        <Grid item xs='8'>
+                        <Grid item xs='12' sm='7'>
                             <AddTrigger trackState={this.state.trackState} position={this.state.trackPosition} />
                         </Grid>
                     </Grid>

@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import { connect } from "react-redux";
 
 import withStyles from "@material-ui/core/styles/withStyles";
-import { Grid } from '@material-ui/core'
+import { Grid, Snackbar } from '@material-ui/core'
+import MuiAlert from '@material-ui/lab/Alert';
 
 import {getPresets, activatePreset} from 'frontend/actions'
 
@@ -28,45 +29,85 @@ class TrackInfo extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            trackName: ''
+            trackName: '',
+            activatedPreset: '',
+            messageOpen: false
         }
-    };
+    }
 
-    async checkForTriggers() {
-        Object.entries(this.props.presets).forEach((preset) => {
-            let presetID = preset[1].name
-            let triggersObject = preset[1].triggers
-            Object.keys(triggersObject).forEach( (song) => {
-                if (this.props.trackState.name == song) {
-                    this.props.activatePreset(presetID)
-                    console.log('activated', presetID)
+    checkForTriggers() {
+        const presetsObject = this.props.presets
+        let mostRecentTriggerPosition = 0
+        let presetToActivate = null
+        let presetsToCountdown = []
+
+        for (const preset in presetsObject) {
+            const triggersObject = presetsObject[preset].triggers
+
+            for (const trigger in triggersObject) {
+                const triggerSongID = triggersObject[trigger][0]
+                let triggerSongPosition = triggersObject[trigger][2]
+                
+                if (triggerSongPosition == null) {
+                    triggerSongPosition = 0
                 }
-            })
+
+                if (triggerSongID == this.props.trackState.id) {
+                    
+                    if (this.props.position >= triggerSongPosition && triggerSongPosition >= mostRecentTriggerPosition) {
+                        mostRecentTriggerPosition = triggerSongPosition
+                        presetToActivate = preset
+                    } else if (this.props.position < triggerSongPosition) {
+                        presetsToCountdown.push([preset, triggerSongPosition])
+                    }
+                }
+            }
+        }
+        
+        presetsToCountdown.forEach( (trigger) => {
+            // trigger[0] = presetID
+            // trigger[1] = songPosition
+            setTimeout( () => {
+                this.props.activatePreset(trigger[0])
+                this.setState({activatedPreset: trigger[0], messageOpen: true})
+            }, trigger[1] - this.props.position)
         })
+
+        if (presetToActivate != null && presetToActivate != this.state.activatedPreset) {
+            this.props.activatePreset(presetToActivate)
+            this.setState({activatedPreset: presetToActivate, messageOpen: true})
+        }
     }
 
     componentDidMount() {
         this.props.getPresets()
     }
 
-    componentDidUpdate() {
-        this.checkForTriggers()
+    componentDidUpdate(prevProps) {
+        if (prevProps != this.props && this.props.isPaused == false) {
+            this.checkForTriggers()
+        }
     }
 
     render() {
-        const {classes, trackState, position, isPaused} = this.props
+        const {classes, trackState, position} = this.props
 
         return (
-            <Grid container direction='row' className={classes.outer}>
-                <Grid item xs='9' container direction='column' justify='center' alignItems='flex-start'>
-                    <h4 className={classes.songTitle}>{trackState.name}</h4>
-                    <p className={classes.albumName}>{trackState.album.name}</p>
-                </Grid> 
-                <Grid item xs='3' container direction='column' justify='center' alignItems='flex-end'>
-                    <p className={classes.positionText}>Position</p>
-                    <p className={classes.positionText}>{position}</p>
+            <div>
+                <Snackbar onClose={() => this.setState({messageOpen: false})} open={this.state.messageOpen} autoHideDuration={2000}>
+                    <MuiAlert onClose={() => this.setState({messageOpen: false})} elevation={6} variant="filled" severity='success'>Activated Preset: {this.state.activatedPreset}</MuiAlert>
+                </Snackbar>
+                <Grid container direction='row' className={classes.outer}>
+                    <Grid item xs='9' container direction='column' justify='center' alignItems='flex-start'>
+                        <h4 className={classes.songTitle}>{trackState.name}</h4>
+                        <p className={classes.albumName}>{trackState.artists[0].name}</p>
+                    </Grid> 
+                    <Grid item xs='3' container direction='column' justify='center' alignItems='center'>
+                        <p className={classes.positionText}>Position</p>
+                        <p className={classes.positionText}>{position}</p>
+                    </Grid>
                 </Grid>
-            </Grid>
+            </div>
         )
     }
 }

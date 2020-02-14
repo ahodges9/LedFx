@@ -45,11 +45,11 @@ export class AddTrigger extends Component {
         this.setState({checked: e.target.checked})
     }
 
-    handleSubmit(id, song, checked, position) {
+    handleSubmit(id, songID, songName, checked, songPosition) {
         if (checked == true) {
-            this.props.addTrigger(id, song, position)
+            this.props.addTrigger(id, songID, songName, songPosition)
         } else {
-            this.props.addTrigger(id, song)
+            this.props.addTrigger(id, songID, songName)
         }
     }
 
@@ -60,8 +60,8 @@ export class AddTrigger extends Component {
     render() {
         const {classes} = this.props
         return (
-            <Grid container justify='flex-end' spacing={2}>
-                <Grid container item xs={4} justify='center' alignItems='center'>
+            <Grid container justify='flex-end' spacing='3'>
+                <Grid container item xs='12' sm='4' justify='center' alignItems='center'>
                     <FormControl>
                         <InputLabel className={classes.label} id="preset-select">Preset</InputLabel>
                         <Select 
@@ -74,7 +74,7 @@ export class AddTrigger extends Component {
                         </Select>
                     </FormControl>
                 </Grid>
-                <Grid container item xs={3} justify='center' alignItems='center' direction='column'>
+                <Grid container item xs='6' sm='3' justify='center' alignItems='center' direction='column'>
                     <FormControl>
                         <FormControlLabel 
                             style={{color: '#1ED760'}} 
@@ -85,10 +85,10 @@ export class AddTrigger extends Component {
                         />
                     </FormControl>
                 </Grid>
-                <Grid container item xs={3} justify='center' alignItems='center' >
+                <Grid container item xs='6' sm='3' justify='center' alignItems='center'>
                     <Button 
                         variant='contained' 
-                        onClick={() =>  this.handleSubmit(this.state.selectedPreset, this.props.trackState.name, this.state.checked, this.props.position)}
+                        onClick={() =>  this.handleSubmit(this.state.selectedPreset, this.props.trackState.id, this.props.trackState.name, this.state.checked, this.props.position)}
                         className={classes.submitButton}
                         >Add Trigger
                     </Button>
@@ -107,7 +107,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = (dispatch) => ({
     getPresets: () => dispatch(getPresets()),
-    addTrigger: (id, song, position) => dispatch(addTrigger(id, song, position))
+    addTrigger: (id, songID, songName, songPosition) => dispatch(addTrigger(id, songID, songName, songPosition))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(AddTrigger))

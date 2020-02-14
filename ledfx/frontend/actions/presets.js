@@ -8,6 +8,7 @@ export const GET_PRESETS = "GET_PRESETS"
 export const ACTIVATE_PRESET = "ACTIVATE_PRESET"
 export const RENAME_PRESET = "RENAME_PRESET"
 export const ADD_TRIGGER = "ADD_TRIGGER"
+export const DELETE_TRIGGER = "DELETE_TRIGGER"
 
 export function addPreset(name) {
   return dispatch => {
@@ -117,13 +118,14 @@ export function getPresets() {
   }
 }
 
-export function addTrigger(id, song, position) {
+export function addTrigger(id, songID, songName, songPosition) {
   return dispatch => {
     const data = {
       id: id,
       action: 'add_trigger',
-      song: song,
-      position: position
+      songID: songID,
+      songName: songName,
+      songPosition: songPosition
     };
     fetch(`${apiUrl}/presets`, {
       method: "PUT",
@@ -136,6 +138,29 @@ export function addTrigger(id, song, position) {
       .then(response => response.json())
       .then(json => dispatch({
         type: ADD_TRIGGER,
+        response: json
+      }));
+  };
+}
+
+export function deleteTrigger(presetID, triggerID) {
+  return dispatch => {
+    const data = {
+      action: 'delete_trigger',
+      id: presetID,
+      triggerID: triggerID
+    };
+    fetch(`${apiUrl}/presets`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response => response.json())
+      .then(json => dispatch({
+        type: DELETE_TRIGGER,
         response: json
       }));
   };

@@ -31,7 +31,6 @@ const styles = theme => ({
     display: "block",
     width: "100%"
   },
-
 });
 
 class PresetCard extends React.Component {
@@ -43,8 +42,7 @@ class PresetCard extends React.Component {
       <Card>
         <CardContent>
           <h3>{preset.name}</h3>
-          <p>{preset.triggerSongs}</p>
-          { preset.devices && <PresetConfigTable devices ={ preset.devices }/> }
+          { preset.devices && <PresetConfigTable presetID={ preset.id } triggers={ preset.triggers } devices ={ preset.devices }/> }
         </CardContent>
         <CardActions className={classes.submitControls}>
             <Button
