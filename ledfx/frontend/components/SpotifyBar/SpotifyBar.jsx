@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import fetch from "cross-fetch";
 
 import withStyles from "@material-ui/core/styles/withStyles";
 import { AppBar, Button, Grid, Typography, Switch, FormControlLabel } from '@material-ui/core';
@@ -9,6 +8,7 @@ import {drawerWidth} from "frontend/assets/jss/style.jsx";
 import TrackInfo from './TrackInfo';
 import AddTrigger  from './AddTrigger';
 
+import {getSpotifyEnabled }from 'frontend/actions'
 import {getPresets} from 'frontend/actions';
 import activatePreset from 'frontend/actions';
 
@@ -46,6 +46,7 @@ class SpotifyBar extends Component {
             isPaused: true
         }
         this.toggleSpotify = this.toggleSpotify.bind(this);
+        this.props.getSpotifyEnabled()
     }
     
     toggleSpotify() {
@@ -122,7 +123,10 @@ class SpotifyBar extends Component {
     render() {
         const {classes} = this.props;
 
-        if (this.state.token === "") {
+        if (this.props.spotifyEnabled == false) {
+            return null
+
+        } else if (this.state.token === "") {
             return (
                 <AppBar className={classes.appBar}>
                     <Grid container justify="center" alignItems="center" className={classes.loginBar}>
@@ -171,9 +175,14 @@ SpotifyBar.propTypes = {
   classes: PropTypes.object.isRequired
 }
 
-const mapDispatchToProps = (dispatch) => ({
-    activatePreset: (presetId) => dispatch(activatePreset(presetId)),
-    getPresets: () => dispatch(getPresets())
+const mapStateToProps = state => ({
+    spotifyEnabled: state.settings.spotifyEnabled
 })
 
-export default connect(null, mapDispatchToProps)(withStyles(styles)(SpotifyBar));
+const mapDispatchToProps = (dispatch) => ({
+    activatePreset: (presetId) => dispatch(activatePreset(presetId)),
+    getPresets: () => dispatch(getPresets()),
+    getSpotifyEnabled: () => dispatch(getSpotifyEnabled())
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(SpotifyBar));

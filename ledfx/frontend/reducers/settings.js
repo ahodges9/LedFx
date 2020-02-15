@@ -1,6 +1,7 @@
 import {
     GET_AUDIO_INPUTS,
-    SET_AUDIO_INPUT
+    SET_AUDIO_INPUT,
+    GET_SPOTIFY_ENABLED
 } from 'frontend/actions'
 
 export function settings(state = {}, action) {
@@ -9,6 +10,9 @@ export function settings(state = {}, action) {
         case GET_AUDIO_INPUTS:
             const audioDevices = action.audioDevices
             return {...state, audioDevices}
+        case GET_SPOTIFY_ENABLED:
+            const spotifyEnabled = action.spotifyEnabled 
+            return {...state, spotifyEnabled}
         default:
             return state
     }

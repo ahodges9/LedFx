@@ -12,6 +12,8 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
 import { getAudioDevices, setAudioDevice } from 'frontend/actions';
+import EnableSpotify from "./EnableSpotify";
+
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -33,6 +35,7 @@ const SettingsView = ({ getAudioDevices, setAudioDevice, settings }) => {
   return (
     <div className={classes.root}>
       {audioDevices && (<AudioCard audioDevices={audioDevices} setAudioDevice={setAudioDevice} />)}
+      <EnableSpotify />
     </div>
     );
 }
