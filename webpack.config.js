@@ -51,7 +51,7 @@ const config = {
   },
   resolve: {
     extensions: [".js", ".jsx", ".css"],
-    modules: [path.resolve("./ledfx"), path.resolve("./node_modules")]
+    modules: [path.resolve("./ledfx"), path.resolve("./node_modules"), "node_modules"]
   },
   plugins: [
     new CopyWebpackPlugin([

@@ -59,7 +59,8 @@ class Device(BaseRegistry):
         if self._active:
             # Clear all the pixel data before deactiving the device
             assembled_frame = np.zeros((self.pixel_count, 3))
-            self.flush(assembled_frame)
+            if not self._config['preview_only']:
+                self.flush(assembled_frame)
             self._ledfx.events.fire_event(DeviceUpdateEvent(
                 self.id, assembled_frame))
 
