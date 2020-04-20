@@ -46,7 +46,7 @@ class DeviceView extends React.Component {
     {
       this.state.device = null;
       device = this.props.devicesById[nextProps.match.params.device_id]
-      this.setState(...this.state, {device: device});
+      this.setState({device});
     }
 
     if(device !== undefined && device !== null)

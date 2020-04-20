@@ -114,7 +114,7 @@ class PixelColorGraph extends React.Component {
     chartData.datasets[0].data = messageData.pixels[0]
     chartData.datasets[1].data = messageData.pixels[1]
     chartData.datasets[2].data = messageData.pixels[2]
-    this.setState(...this.state, {chartData: chartData})
+    this.setState({chartData: chartData})
   }
 
   handleOpen = e => {
@@ -158,14 +158,14 @@ class PixelColorGraph extends React.Component {
       onerror: e => console.log('WebSocket Error:', e)
     });
 
-    this.setState(...this.state, {ws: ws});
+    this.setState( {ws: ws});
   }
 
   disconnectWebsocket = () => {
     if (this.state.ws != undefined &&
       this.websocketActive) {
       this.state.ws.close(1000);
-      this.setState(...this.state, {ws: undefined});
+      this.setState( {ws: undefined});
     }
   }
 
@@ -181,7 +181,7 @@ class PixelColorGraph extends React.Component {
     if (this.websocketActive) {
       this.disablePixelVisualization()
       this.enablePixelVisualization(nextProps.device)
-      this.setState(...this.state, 
+      this.setState(
         this.getChartOptionsForDevice(nextProps.device))
     }
   }

@@ -66,7 +66,7 @@ class DevicesTableItem extends React.Component {
             <TableCell className={classes.tableCell}>
                 {device.type}
             </TableCell>
-            <TableCell className={classes.tableCell} numeric>
+            <TableCell className={classes.tableCell} align="right">
             <Button variant="contained" size="small" className={classes.deleteButton} onClick={this.handleDeleteDevice} >
                 <DeleteIcon style={{ fontSize: 16 }} />
             </Button>

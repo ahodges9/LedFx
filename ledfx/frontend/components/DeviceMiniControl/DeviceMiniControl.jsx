@@ -48,7 +48,7 @@ const styles = theme => ({
 class DeviceMiniControl extends React.Component {
 
   isDeviceOn = () => {
-    return this.props.device.effect && this.props.device.effect.name;
+    return !!this.props.device.effect && !!this.props.device.effect.name;
   }
 
   toggleOn = () => {
@@ -66,12 +66,12 @@ class DeviceMiniControl extends React.Component {
     const { classes, device } = this.props;
 
     return (
-      <Grid container direction="col" spacing={1}>
+      <Grid container direction="column" spacing={1}>
         <Grid item xs>
           <Typography variant="h5" color="inherit" className={classes.header}>
             {device.config.name}
           </Typography>
-          <Typography variant="caption text" color="inherit" className={classes.subHeader}>
+          <Typography variant="caption" color="inherit" className={classes.subHeader}>
             Effect: {device.effect.name}
           </Typography>
         </Grid>

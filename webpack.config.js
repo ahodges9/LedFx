@@ -14,11 +14,13 @@ const config = {
           {
             loader: "babel-loader",
             options: {
-              presets: ["es2015", "react"],
+              presets: ["@babel/preset-env"],
               plugins: [
-                "transform-class-properties",
-                "transform-react-jsx",
-                "transform-object-rest-spread"
+                "@babel/plugin-proposal-class-properties",
+                "@babel/plugin-transform-react-jsx",
+                ["@babel/plugin-transform-spread", {
+                  "loose": true
+                }]
               ]
             }
           }

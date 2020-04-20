@@ -81,7 +81,7 @@ class SchemaFormCollection extends React.Component {
   }
   
   showAdditional = () => {
-    this.setState(...this.state, {
+    this.setState({
       showAdditional: !this.state.showAdditional
     });
   };

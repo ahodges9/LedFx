@@ -41,18 +41,18 @@ class DevicesView extends React.Component {
   }
 
   openAddDeviceDialog = () => {
-    this.setState(...this.state, { addDialogOpened: true });
+    this.setState({ addDialogOpened: true });
   };
 
   closeAddDeviceDialog = () => {
-    this.setState(...this.state, { addDialogOpened: false });
+    this.setState({ addDialogOpened: false });
   };
 
   render() {
     const { classes, schemas } = this.props;
     return (
       <div>
-        <Grid container spacing={16}>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
             <Card variant="outlined">
               <CardHeader title="Devices" subheader="View and manage all your devices connected to LedFx" />
