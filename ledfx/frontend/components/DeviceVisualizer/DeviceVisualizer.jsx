@@ -1,9 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
 import withStyles from "@material-ui/core/styles/withStyles";
-import { Line } from "react-chartjs-2";
 import Sockette from "sockette";
 
 const styles = (theme) => ({
@@ -33,7 +30,29 @@ class DeviceVisualizer extends React.Component {
       return;
     }
 
-    this.setState({ messageData: messageData });
+    var rw = this.refs.canvas.width / this.props.device.config.pixel_count;
+
+    for (var i = 0; i < this.props.device.config.pixel_count; i++) {
+      this.ctx.fillStyle = this.RGBToHex(
+        messageData.pixels[0][i],
+        messageData.pixels[1][i],
+        messageData.pixels[2][i]
+      );
+
+      this.ctx.fillRect(i * rw, 0, rw, this.refs.canvas.height);
+    }
+  };
+
+  RGBToHex = (r, g, b) => {
+    r = Math.round(r).toString(16);
+    g = Math.round(g).toString(16);
+    b = Math.round(b).toString(16);
+
+    if (r.length == 1) r = "0" + r;
+    if (g.length == 1) g = "0" + g;
+    if (b.length == 1) b = "0" + b;
+
+    return "#" + r + g + b;
   };
 
   handleOpen = (e) => {
@@ -88,6 +107,8 @@ class DeviceVisualizer extends React.Component {
   };
 
   componentDidMount() {
+    const canvas = this.refs.canvas;
+    this.ctx = canvas.getContext("2d");
     this.connectWebsocket();
   }
 
@@ -105,33 +126,7 @@ class DeviceVisualizer extends React.Component {
   render() {
     const { classes, device } = this.props;
 
-    var border = 0; //Math.max(5, 800/device.config.pixel_count/5);
-    var rw = Math.min(
-      (800 - border) / device.config.pixel_count,
-      32 - border
-    );
-
-    const items = []
-  
-    if (this.state.messageData) {
-
-    for (var i=0;i<device.config.pixel_count;i++) {
-      items.push( <rect
-        x={border + i * rw}
-        y={border}
-        height={rw - border}
-        width={rw - border}
-        style={{fill: "rgb("+this.state.messageData.pixels[0][i]+","+this.state.messageData.pixels[1][i]+","+this.state.messageData.pixels[2][i]+")"}}
-        key={i}
-      />)
-    }
-  }
-
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 32">
-        {items}
-      </svg>
-    );
+    return <canvas ref="canvas" style={{ width: "100%", height: 10 }} />;
   }
 }
 
