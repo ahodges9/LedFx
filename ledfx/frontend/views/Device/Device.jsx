@@ -71,7 +71,18 @@ class DeviceView extends React.Component {
             <Card variant="outlined">
               <CardContent>
                 <PixelColorGraph device={device} />
-                <DeviceVisualizer device={device} />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6}>
+            <Card variant="outlined">
+              <CardHeader
+                title="Preview"
+                subheader="Select an effect. Adjust settings manually, or choose a preset."
+              />
+              <CardContent>
+              <DeviceVisualizer device={device} />
+
               </CardContent>
             </Card>
           </Grid>

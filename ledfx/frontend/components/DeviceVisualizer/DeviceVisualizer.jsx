@@ -1,14 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import withStyles from "@material-ui/core/styles/withStyles";
 import Sockette from "sockette";
-
-const styles = (theme) => ({
-  content: {
-    minWidth: 120,
-    maxWidth: "100%",
-  },
-});
+import DeviceVisualizerMatrix from "./DeviceVisualizerMatrix";
 
 class DeviceVisualizer extends React.Component {
   constructor(props) {
@@ -20,39 +13,12 @@ class DeviceVisualizer extends React.Component {
     this.state = {};
   }
 
+  componentDidMount() {
+    this.connectWebsocket();
+  }
   handleMessage = (e) => {
     var messageData = JSON.parse(e.data);
-
-    // Ensure this message is for the current device. This can happen
-    // during transistions between devices where the component stays
-    // loaded
-    if (messageData.device_id != this.props.device.id) {
-      return;
-    }
-
-    var rw = this.refs.canvas.width / this.props.device.config.pixel_count;
-
-    for (var i = 0; i < this.props.device.config.pixel_count; i++) {
-      this.ctx.fillStyle = this.RGBToHex(
-        messageData.pixels[0][i],
-        messageData.pixels[1][i],
-        messageData.pixels[2][i]
-      );
-
-      this.ctx.fillRect(i * rw, 0, rw, this.refs.canvas.height);
-    }
-  };
-
-  RGBToHex = (r, g, b) => {
-    r = Math.round(r).toString(16);
-    g = Math.round(g).toString(16);
-    b = Math.round(b).toString(16);
-
-    if (r.length == 1) r = "0" + r;
-    if (g.length == 1) g = "0" + g;
-    if (b.length == 1) b = "0" + b;
-
-    return "#" + r + g + b;
+    this.refs.vis.drawData(messageData);
   };
 
   handleOpen = (e) => {
@@ -106,12 +72,6 @@ class DeviceVisualizer extends React.Component {
     }
   };
 
-  componentDidMount() {
-    const canvas = this.refs.canvas;
-    this.ctx = canvas.getContext("2d");
-    this.connectWebsocket();
-  }
-
   componentWillUnmount() {
     this.disconnectWebsocket();
   }
@@ -124,15 +84,14 @@ class DeviceVisualizer extends React.Component {
   }
 
   render() {
-    const { classes, device } = this.props;
+    const { device } = this.props;
 
-    return <canvas ref="canvas" style={{ width: "100%", height: 10 }} />;
+    return <DeviceVisualizerMatrix device={device} ref="vis" />;
   }
 }
 
 DeviceVisualizer.propTypes = {
-  classes: PropTypes.object.isRequired,
   device: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(DeviceVisualizer);
+export default DeviceVisualizer;

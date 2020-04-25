@@ -1,10 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { Line } from 'react-chartjs-2';
 import Sockette from 'sockette';
+import DeviceVisualizerStrip from "frontend/components/DeviceVisualizer/DeviceVisualizerStrip";
 
 const styles = theme => ({
   content: {
@@ -115,6 +114,8 @@ class PixelColorGraph extends React.Component {
     chartData.datasets[1].data = messageData.pixels[1]
     chartData.datasets[2].data = messageData.pixels[2]
     this.setState({chartData: chartData})
+
+    this.refs.vis.drawData(messageData);
   }
 
   handleOpen = e => {
@@ -190,7 +191,10 @@ class PixelColorGraph extends React.Component {
     const { classes, device } = this.props;
     
     return (
+      <>
       <Line data={this.state.chartData} options={this.state.chartOptions}/>
+      <DeviceVisualizerStrip device={device} ref="vis" />
+      </>
     );
   }
 }
