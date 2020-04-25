@@ -16,6 +16,8 @@ class UDPDevice(Device):
         vol.Optional('include_indexes', description='Include the index for every LED', default=False): bool,
         vol.Optional('data_prefix', description='Data to be appended in hex format'): str,
         vol.Optional('data_postfix', description='Data to be prepended in hex format'): str,
+        vol.Optional('width', description='Number of pixels width (if LEDs are arranged in a matrix)'): vol.All(vol.Coerce(int), vol.Range(min=1)),
+        vol.Optional('matrix_zigzag', description='Set if your LEDs your matrix LEDs are arranged in a zigzag-shape', default=True): bool
     })
 
     def activate(self):
@@ -40,6 +42,7 @@ class UDPDevice(Device):
             udpData.extend(bytes.fromhex(prefix))
 
         # Append all of the pixel data
+
         if self._config['include_indexes']:
             for i in range(len(byteData)):
                 udpData.extend(bytes([i]))

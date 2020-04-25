@@ -12,6 +12,7 @@ import { connect } from "react-redux";
 import EffectControl from "frontend/components/EffectControl/EffectControl.jsx";
 import PixelColorGraph from "frontend/components/PixelColorGraph/PixelColorGraph.jsx";
 import PresetsCard from "frontend/components/PresetsCard/PresetsCard.jsx";
+import DeviceVisualizer from "frontend/components/DeviceVisualizer/DeviceVisualizer.jsx"
 
 class DeviceView extends React.Component {
   constructor() {
@@ -77,6 +78,14 @@ class DeviceView extends React.Component {
               </CardContent>
             </Card>
           </Grid>
+          <Grid item xs={12}>
+            <Card variant="outlined">
+              <CardContent>
+                <DeviceVisualizer device={device}/>
+              </CardContent>
+            </Card>
+          </Grid>
+          
           <Grid item xs={6}>
             <Card variant="outlined">
               <CardHeader title="Effect Control" subheader="Select an effect. Adjust settings manually, or choose a preset." />
