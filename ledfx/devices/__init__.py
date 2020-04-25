@@ -78,9 +78,19 @@ class Device(BaseRegistry):
     def process_active_effect(self):
         # Assemble the frame if necessary, if nothing changed just sleep
         assembled_frame = self.assemble_frame()
+
         if assembled_frame is not None:
             if not self._config['preview_only']:
-                self.flush(assembled_frame)
+                # Reverse every other row for zigzagged matrix
+                if self.config['matrix_zigzag'] and self.config['height'] > 1:
+                    w = self.config['width']
+                    send_frame = assembled_frame.copy()
+                    for row in range(1, self._config['height'], 2):
+                        send_frame[row*w:(row+1) *
+                                   w] = send_frame[(row+1)*w-1:row*w-1:-1]
+                    self.flush(send_frame)
+                else:
+                    self.flush(assembled_frame)
 
             def trigger_device_update_event():
                 self._ledfx.events.fire_event(DeviceUpdateEvent(
@@ -181,7 +191,7 @@ class Devices(RegistryLoader):
                 device['config']['width'] = device['config']['pixel_count']
                 device['config']['height'] = 1
                 del device['config']['pixel_count']
-                
+
             self._ledfx.devices.create(
                 id=device['id'],
                 type=device['type'],
@@ -208,4 +218,3 @@ class Devices(RegistryLoader):
             if device_id == device.id:
                 return device
         return None
-

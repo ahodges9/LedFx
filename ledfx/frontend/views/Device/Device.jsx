@@ -77,19 +77,6 @@ class DeviceView extends React.Component {
           <Grid item xs={6}>
             <Card variant="outlined">
               <CardHeader
-                title="Preview"
-                subheader="Select an effect. Adjust settings manually, or choose a preset."
-              />
-              <CardContent>
-              <DeviceVisualizer device={device} />
-
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={6}>
-            <Card variant="outlined">
-              <CardHeader
                 title="Effect Control"
                 subheader="Select an effect. Adjust settings manually, or choose a preset."
               />
@@ -99,6 +86,12 @@ class DeviceView extends React.Component {
             </Card>
           </Grid>
           <Grid item xs={6}>
+            <Card variant="outlined">
+              <CardHeader title="Preview" />
+              <CardContent>
+                <DeviceVisualizer device={device} />
+              </CardContent>
+            </Card>
             <PresetsCard device={device} />
           </Grid>
         </Grid>
