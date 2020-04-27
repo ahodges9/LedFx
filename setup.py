@@ -26,6 +26,7 @@ INSTALL_REQUIRES = [
     'requests>=2.22.0',
 	'pyyaml>=5.1',
     'aubio>=0.4.8',
+    'Pillow>=7.1.2',
     'pypiwin32>=223;platform_system=="Windows"'
 ]
 
