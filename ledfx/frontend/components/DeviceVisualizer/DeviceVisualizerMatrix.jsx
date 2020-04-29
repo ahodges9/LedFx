@@ -19,8 +19,8 @@ class DeviceVisualizerMatrix extends React.Component {
       return;
     }
 
-    var rw = this.canvas.width / this.props.device.config.width;
-    var rh = this.canvas.height / this.props.device.config.height;
+    var rw = Math.min(this.canvas.width / this.props.device.config.width, 
+      this.canvas.height / this.props.device.config.height);
 
     var offset = 0;
     for (var y = 0; y < this.props.device.config.height; y++) {
@@ -31,7 +31,7 @@ class DeviceVisualizerMatrix extends React.Component {
           messageData.pixels[2][offset]
         );
 
-        this.ctx.fillRect(x * rw, y * rh, rw, rh);
+        this.ctx.fillRect(x * rw, y * rw, rw, rw);
         offset++;
       }
     }
@@ -44,8 +44,8 @@ class DeviceVisualizerMatrix extends React.Component {
 
   render() {
     const { device } = this.props;
-    const height = Math.ceil((device.height / device.width) * 100) + "%";
-    return <canvas ref="canvas" style={{ width: "100%", height: height }} />;
+    //const height = Math.ceil((device.height / device.width) * 100) + "%";
+    return <canvas ref="canvas" style={{ width: "100%", height: "100%" }} />;
   }
 }
 
