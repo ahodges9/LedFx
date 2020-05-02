@@ -95,6 +95,7 @@ class Effect(BaseRegistry):
     _dirty = False
     _config = None
     _active = False
+    _dimensions = (0,0)
 
     # Basic effect properties that can be applied to all effects
     CONFIG_SCHEMA = vol.Schema({
@@ -113,9 +114,10 @@ class Effect(BaseRegistry):
         if self._active:
             self.deactivate()
 
-    def activate(self, pixel_count):
+    def activate(self, dimensions):
         """Attaches an output channel to the effect"""
-        self._pixels = np.zeros((pixel_count, 3))
+        self._dimensions = dimensions
+        self._pixels = np.zeros((dimensions[0]*dimensions[1], 3))
         self._active = True
 
         _LOGGER.info("Effect {} activated.".format(self.NAME))

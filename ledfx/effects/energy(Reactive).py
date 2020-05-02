@@ -29,6 +29,12 @@ class EnergyAudioEffect(AudioReactiveEffect):
 
     def audio_data_updated(self, data):
 
+        num = self.pixel_count
+
+        # mode than one row? Use height as number!
+        if self._dimensions[1] > 1:
+            num = self._dimensions[1]
+
         # Calculate the low, mids, and high indexes scaling based on the pixel count
         lows_idx = int(np.mean(self.pixel_count * data.melbank_lows()))
         mids_idx = int(np.mean(self.pixel_count * data.melbank_mids()))
@@ -47,4 +53,18 @@ class EnergyAudioEffect(AudioReactiveEffect):
             p[:highs_idx] = self.high_colour
 
         # Filter and update the pixel values
-        self.pixels = self._p_filter.update(p)
+        if self._dimensions[1] > 1:
+            temp = self.pixels.copy()
+
+            # scroll left 1 pixel
+            w = self._dimensions[0]
+            newpix = self._p_filter.update(p)
+
+            for row in range(0, self._dimensions[1], 1):
+                temp[row*w:row*w+w-1] = temp[row*w+1:row*w+w:1]
+                temp[row*w+w-1] = newpix[row]
+            
+            # add new values at the right
+            self.pixels = temp
+        else:
+            self.pixels = self._p_filter.update(p)

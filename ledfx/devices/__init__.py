@@ -51,7 +51,7 @@ class Device(BaseRegistry):
             self._active_effect.deactivate()
 
         self._active_effect = effect
-        self._active_effect.activate(self.pixel_count)
+        self._active_effect.activate((self._config["width"], self._config["height"]))
         # self._active_effect.setDirtyCallback(self.process_active_effect)
         if not self._active:
             self.activate()
