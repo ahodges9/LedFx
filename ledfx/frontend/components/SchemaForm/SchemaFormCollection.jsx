@@ -49,10 +49,10 @@ class SchemaFormCollection extends React.Component {
     super(props);
 
     this.state = {
-      collectionKey: "",
+      collectionKey: props.collectionKey || "",
       interRender: false,
       showAdditional: false,
-      model: {},
+      model: props.initialModel && {...props.initialModel} || {},
       form: [
         "*",
         {
