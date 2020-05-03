@@ -1,77 +1,114 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 
-import { makeStyles } from '@material-ui/core/styles';
-import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import Typography from '@material-ui/core/Typography';
+import Grid from "@material-ui/core/Grid";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+import TextField from "@material-ui/core/TextField";
+import Typography from "@material-ui/core/Typography";
 
-import { getAudioDevices, setAudioDevice } from 'frontend/actions';
+import { getAudioDevices, setAudioDevice } from "frontend/actions";
 
 const SettingsView = ({ getAudioDevices, setAudioDevice, settings }) => {
-  
   useEffect(() => {
-    getAudioDevices()
-  }, [])
+    getAudioDevices();
+  }, []);
 
-  const { audioDevices } = settings
-  
+  const { audioDevices } = settings;
+
   return (
-    <div>
-      {audioDevices && (<AudioCard audioDevices={audioDevices} setAudioDevice={setAudioDevice} />)}
-    </div>
-    );
-}
+    <Grid container direction="row" spacing={4}>
+      <Grid item lg={6}>
+        {audioDevices && (
+          <AudioCard
+            audioDevices={audioDevices}
+            setAudioDevice={setAudioDevice}
+          />
+        )}
+      </Grid>
+    </Grid>
+  );
+};
 
 const AudioCard = ({ audioDevices, setAudioDevice }) => {
-  const activeDeviceIndex = audioDevices['active_device_index']
+  const activeDeviceIndex = audioDevices["active_device_index"];
+  const activeAudioLatency = audioDevices["device_latency"];
 
-  const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex)
+  const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex);
+  const [audioLatency, setAudioLatency] = useState(activeAudioLatency);
 
-  const handleAudioSelected = (index) => {
-    setSelectedIndex(index)
-    setAudioDevice(index)
-  }
+  const handleSettingsUpdate = () => {
+    setAudioDevice(selectedIndex, audioLatency);
+  };
 
-  return (<Card variant="outlined">
-            <CardHeader title="Audio Device" subheader="Audio input for reactive effects. Sound card is better than microphone!" />
-            <CardContent>
-              <Typography variant="subtitle2">Current device: {audioDevices.devices[activeDeviceIndex]}</Typography>
-              <FormControl>
-                <Select
-                  id="audio-input-select"
-                  value={selectedIndex}
-                  onChange={(e) => handleAudioSelected(e.target.value)}
-                >
-                {renderAudioInputSelect(audioDevices.devices)}
-                </Select>
-            </FormControl>
-            </CardContent>
-          </Card>
-      )
-}
+  return (
+    <Card variant="outlined">
+      <CardHeader
+        title="Audio Device"
+        subheader="Audio input for reactive effects. Sound card is better than microphone!"
+      />
+      <CardContent>
+        <Typography variant="subtitle2">
+          Current device: {audioDevices.devices[activeDeviceIndex]}
+        </Typography>
+        <div>
+          <FormControl>
+            <Select
+              id="audio-input-select"
+              value={selectedIndex}
+              onChange={(e) => {
+                setSelectedIndex(e.target.value);
+                handleSettingsUpdate();
+              }}
+            >
+              {renderAudioInputSelect(audioDevices.devices)}
+            </Select>
+          </FormControl>
+        </div>
+        <div>
+          <TextField
+            type="number"
+            InputProps={{
+              min: 0,
+              max: 10000,
+              endAdornment: (
+                <InputAdornment position={"end"}>ms</InputAdornment>
+              ),
+            }}
+            label="Compensate for device latency"
+            helperText="If your audio device has a latency (e.g. if using AirPlay or Bluetooth), we can delay processing"
+            value={audioLatency}
+            onChange={(e) => {
+              setAudioLatency(e.target.value);
+              handleSettingsUpdate();
+            }}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 const renderAudioInputSelect = (audioInputs) => {
-  return Object.keys(audioInputs).map((key) => (<MenuItem
-    key={key}
-    value={key}
-    >{audioInputs[key]}</MenuItem>))
-}
+  return Object.keys(audioInputs).map((key) => (
+    <MenuItem key={key} value={key}>
+      {audioInputs[key]}
+    </MenuItem>
+  ));
+};
 
-const mapStateToProps = state => ({ 
-  settings: state.settings 
-})
+const mapStateToProps = (state) => ({
+  settings: state.settings,
+});
 
 const mapDispatchToProps = (dispatch) => ({
   getAudioDevices: () => dispatch(getAudioDevices()),
-  setAudioDevice: (index) => dispatch(setAudioDevice(index))
-})
+  setAudioDevice: (index, latency) => dispatch(setAudioDevice(index, latency)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingsView);

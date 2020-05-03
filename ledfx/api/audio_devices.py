@@ -7,6 +7,7 @@ import pyaudio
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class AudioDevicesEndpoint(RestEndpoint):
 
     ENDPOINT_PATH = "/api/audio/devices"
@@ -15,16 +16,18 @@ class AudioDevicesEndpoint(RestEndpoint):
 
     async def get(self) -> web.Response:
         """Get list of audio devices and active audio device WIP"""
-        
+
         if self._audio is None:
             self._audio = pyaudio.PyAudio()
 
         info = self._audio.get_host_api_info_by_index(0)
-        audio_config = self._ledfx.config.get('audio', {'device_index': 0})
+        audio_config = self._ledfx.config.get(
+            'audio', {'device_index': 0, 'device_latency': 0})
 
         audio_devices = {}
         audio_devices['devices'] = {}
         audio_devices['active_device_index'] = audio_config['device_index']
+        audio_devices['device_latency'] = audio_config.get('device_latency', 0)
 
         for i in range(0, info.get('deviceCount')):
             device_info = self._audio.get_device_info_by_host_api_device_index(0, i)
@@ -40,24 +43,38 @@ class AudioDevicesEndpoint(RestEndpoint):
 
         info = self._audio.get_host_api_info_by_index(0)
         if index is None:
-            response = { 'status' : 'failed', 'reason': 'Required attribute "index" was not provided' }
+            response = {'status': 'failed',
+                        'reason': 'Required attribute "index" was not provided'}
             return web.json_response(data=response, status=500)
 
         if index not in range(0, info.get('deviceCount')):
-            response = { 'status' : 'failed', 'reason': 'Invalid device index [{}]'.format(index) }
+            response = {'status': 'failed',
+                        'reason': 'Invalid device index [{}]'.format(index)}
+            return web.json_response(data=response, status=500)
+
+        device_latency = data.get('device_latency')
+        if device_latency is None:
+            response = {'status': 'failed',
+                        'reason': 'Required attribute "device_latency" was not provided'}
+            return web.json_response(data=response, status=500)
+
+        if device_latency < 0:
+            response = {'status': 'failed',
+                        'reason': 'device_latency must be positive or 0'}
             return web.json_response(data=response, status=500)
 
         # Update and save config
         new_config = self._ledfx.config.get('audio', {})
         new_config['device_index'] = int(index)
+        new_config['device_latency'] = int(device_latency)
         self._ledfx.config['audio'] = new_config
-        
+
         save_config(
-            config = self._ledfx.config, 
-            config_dir = self._ledfx.config_dir)
+            config=self._ledfx.config,
+            config_dir=self._ledfx.config_dir)
 
         if self._ledfx.audio:
             self._ledfx.audio.update_config(new_config)
 
-        response = { 'status': 'success' }
+        response = {'status': 'success'}
         return web.json_response(data=response, status=200)
