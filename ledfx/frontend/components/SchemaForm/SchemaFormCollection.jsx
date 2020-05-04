@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
+import { SchemaForm, utils } from "react-schema-form";
 
 import Select from "@material-ui/core/Select";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -9,10 +10,6 @@ import FormControl from "@material-ui/core/FormControl";
 
 import Button from "@material-ui/core/Button";
 import Collapse from "@material-ui/core/Collapse";
-
-import { selectOrSet } from "frontend/components/SchemaForm/Utils.jsx";
-
-var { SchemaForm } = require("react-schema-form");
 
 const styles = (theme) => ({
   form: {
@@ -52,7 +49,7 @@ class SchemaFormCollection extends React.Component {
       collectionKey: props.collectionKey || "",
       interRender: false,
       showAdditional: false,
-      model: props.initialModel && {...props.initialModel} || {},
+      model: (props.initialModel && { ...props.initialModel }) || {},
       form: [
         "*",
         {
@@ -89,8 +86,11 @@ class SchemaFormCollection extends React.Component {
     }
   };
 
-  onModelChange = (key, val) => {
-    selectOrSet(key, this.state.model, val);
+  onModelChange = (key, val, type) => {
+    const { model } = this.state;
+    const newModel = model;
+    utils.selectOrSet(key, newModel, val, type);
+    this.setState({ model: newModel });
   };
 
   handleSubmit = (event) => {

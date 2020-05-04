@@ -42,10 +42,6 @@ const AudioCard = ({ audioDevices, setAudioDevice }) => {
   const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex);
   const [audioLatency, setAudioLatency] = useState(activeAudioLatency);
 
-  const handleSettingsUpdate = () => {
-    setAudioDevice(selectedIndex, audioLatency);
-  };
-
   return (
     <Card variant="outlined">
       <CardHeader
@@ -64,6 +60,11 @@ const AudioCard = ({ audioDevices, setAudioDevice }) => {
               onChange={(e) => {
                 setSelectedIndex(e.target.value);
                 handleSettingsUpdate();
+              }}
+              onChange={(e) => {
+                var idx = e.target.value;
+                setSelectedIndex(idx);
+                setAudioDevice(idx, audioLatency);
               }}
             >
               {renderAudioInputSelect(audioDevices.devices)}
@@ -84,8 +85,9 @@ const AudioCard = ({ audioDevices, setAudioDevice }) => {
             helperText="If your audio device has a latency (e.g. if using AirPlay or Bluetooth), we can delay processing"
             value={audioLatency}
             onChange={(e) => {
-              setAudioLatency(e.target.value);
-              handleSettingsUpdate();
+              var latency = e.target.value;
+              setAudioLatency(latency);
+              setAudioDevice(selectedIndex, latency);
             }}
           />
         </div>
