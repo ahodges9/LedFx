@@ -37,7 +37,7 @@
     "react-event-listener": "^0.6.6",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.1.2",
-    "react-schema-form": "^0.8.6",
+    "react-schema-form": "^0.8.7",
     "recompose": "^0.30.0",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",

@@ -32,7 +32,7 @@ class EnergyAudioEffect(AudioReactiveEffect):
         num = self.pixel_count
 
         # mode than one row? Use height as number!
-        if self._dimensions[1] > 1:
+        if self.is_2d:
             num = self._dimensions[1]
 
         # Calculate the low, mids, and high indexes scaling based on the pixel count
@@ -53,7 +53,7 @@ class EnergyAudioEffect(AudioReactiveEffect):
             p[:highs_idx] = self.high_colour
 
         # Filter and update the pixel values
-        if self._dimensions[1] > 1:
+        if self.is_2d:
             temp = self.pixels.copy()
 
             # scroll left 1 pixel
