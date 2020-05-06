@@ -53,4 +53,4 @@ class Text(TemporalEffect):
 
         _image.paste(self._fontimage, (14-xoffset, 0), self._fontimage.convert('RGBA'))
        
-        self.pixels = np.array(_image.getdata(), dtype=float)
+        self.pixels = _image

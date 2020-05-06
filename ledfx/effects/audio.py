@@ -2,7 +2,7 @@ from collections import namedtuple
 import time
 import logging
 import pyaudio
-from ledfx.effects import Effect, smooth
+from ledfx.effects import Effect
 import voluptuous as vol
 import ledfx.effects.mel as mel
 from ledfx.effects.math import ExpFilter
@@ -497,6 +497,38 @@ class MelbankInputSource(AudioInputSource):
             np.tile(1e-1, self._config['samples']), alpha_decay=0.2, alpha_rise=0.99)
         self.common_filter = ExpFilter(alpha_decay=0.99, alpha_rise=0.01)
 
+
+    @lru_cache(maxsize=32)
+    def _gaussian_kernel1d(sigma, order, radius):
+        if order < 0:
+            raise ValueError('order must be non-negative')
+        p = np.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])
+        x = np.arange(-radius, radius + 1)
+        phi_x = np.exp(p(x), dtype=np.double)
+        phi_x /= phi_x.sum()
+        if order > 0:
+            q = np.polynomial.Polynomial([1])
+            p_deriv = p.deriv()
+            for _ in range(order):
+                # f(x) = q(x) * phi(x) = q(x) * exp(p(x))
+                # f'(x) = (q'(x) + q(x) * p'(x)) * phi(x)
+                q = q.deriv() + q * p_deriv
+            phi_x *= q(x)
+        return phi_x
+
+
+    def smooth(x, sigma):
+        lw = int(4.0 * float(sigma) + 0.5)
+        w = self._gaussian_kernel1d(sigma, 0, lw)
+        window_len = len(w)
+
+        s = np.r_[x[window_len-1:0:-1], x, x[-1:-window_len:-1]]
+        y = np.convolve(w/w.sum(), s, mode='valid')
+
+        if window_len < len(x):
+            return y[(window_len//2):-(window_len//2)]
+        return y[0:len(x)]
+
     @lru_cache(maxsize=32)
     def melbank(self):
         """Returns the raw melbank curve"""
@@ -506,7 +538,7 @@ class MelbankInputSource(AudioInputSource):
             raw_filter_banks = self.filterbank(self.frequency_domain())
             raw_filter_banks = raw_filter_banks ** 2.0
 
-            self.mel_gain.update(np.max(smooth(raw_filter_banks, sigma=1.0)))
+            self.mel_gain.update(np.max(self.smooth(raw_filter_banks, sigma=1.0)))
             filter_banks = raw_filter_banks / self.mel_gain.value
             filter_banks = self.mel_smoothing.update(filter_banks)
 

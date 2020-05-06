@@ -13,7 +13,6 @@ import os
 
 _LOGGER = logging.getLogger(__name__)
 
-
 def mix_colors(color_1, color_2, ratio):
     if color_2 == []:
         return (color_1[0] * (1-ratio) + 0,
@@ -24,78 +23,15 @@ def mix_colors(color_1, color_2, ratio):
                 color_1[1] * (1-ratio) + color_2[1] * ratio,
                 color_1[2] * (1-ratio) + color_2[2] * ratio)
 
-
-def fill_solid(pixels, color):
-    pixels[:, ] = color
-
-
-def fill_rainbow(pixels, initial_hue, delta_hue):
+def fill_rainbow(pixels : Image, initial_hue, delta_hue):
     hue = initial_hue
     sat = 0.95
     val = 1.0
-    for i in range(0, len(pixels)):
-        pixels[i, :] = tuple(int(i * 255)
-                             for i in colorsys.hsv_to_rgb(hue, sat, val))
-        hue = hue + delta_hue
+    for y in range(0, pixels.height):
+        for x in range(0, pixels.width):
+            pixels[x, y] = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(hue, sat, val))
+            hue = hue + delta_hue
     return pixels
-
-
-def mirror_pixels(pixels):
-    # TODO: Figure out some better logic here. Needs to reduce the signal
-    # and reflect across the middle. The prior logic was broken for
-    # non-uniform effects.
-    mirror_shape = (np.shape(pixels)[0], 2, np.shape(pixels)[1])
-    return np.append(pixels[::-1], pixels, axis=0).reshape(mirror_shape).mean(axis=1)
-
-
-def flip_pixels(pixels):
-    return np.flipud(pixels)
-
-
-def blur_pixels(pixels, sigma):
-    rgb_array = pixels.T
-    rgb_array[0] = smooth(rgb_array[0], sigma)
-    rgb_array[1] = smooth(rgb_array[1], sigma)
-    rgb_array[2] = smooth(rgb_array[2], sigma)
-    return rgb_array.T
-
-
-def brightness_pixels(pixels, brightness):
-    pixels *= brightness
-    return pixels
-
-
-@lru_cache(maxsize=32)
-def _gaussian_kernel1d(sigma, order, radius):
-    if order < 0:
-        raise ValueError('order must be non-negative')
-    p = np.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])
-    x = np.arange(-radius, radius + 1)
-    phi_x = np.exp(p(x), dtype=np.double)
-    phi_x /= phi_x.sum()
-    if order > 0:
-        q = np.polynomial.Polynomial([1])
-        p_deriv = p.deriv()
-        for _ in range(order):
-            # f(x) = q(x) * phi(x) = q(x) * exp(p(x))
-            # f'(x) = (q'(x) + q(x) * p'(x)) * phi(x)
-            q = q.deriv() + q * p_deriv
-        phi_x *= q(x)
-    return phi_x
-
-
-def smooth(x, sigma):
-    lw = int(4.0 * float(sigma) + 0.5)
-    w = _gaussian_kernel1d(sigma, 0, lw)
-    window_len = len(w)
-
-    s = np.r_[x[window_len-1:0:-1], x, x[-1:-window_len:-1]]
-    y = np.convolve(w/w.sum(), s, mode='valid')
-
-    if window_len < len(x):
-        return y[(window_len//2):-(window_len//2)]
-    return y[0:len(x)]
-
 
 @BaseRegistry.no_registration
 class Effect(BaseRegistry):
@@ -129,7 +65,7 @@ class Effect(BaseRegistry):
     def activate(self, dimensions):
         """Attaches an output channel to the effect"""
         self._dimensions = dimensions
-        self._pixels = np.zeros((dimensions[0]*dimensions[1], 3))
+        self._pixels = Image.new("RGB", (dimensions[0], dimensions[1]))
         self._active = True
 
         _LOGGER.info("Effect {} activated.".format(self.NAME))
@@ -188,7 +124,7 @@ class Effect(BaseRegistry):
             raise Exception(
                 'Attempting to access pixels before effect is active')
 
-        return np.copy(self._pixels)
+        return self._pixels.copy()
 
     @pixels.setter
     def pixels(self, pixels):
@@ -198,39 +134,31 @@ class Effect(BaseRegistry):
                 'Attempting to set pixels before effect is active. Dropping.')
             return
 
-        if isinstance(pixels, tuple):
-            self._pixels = np.copy(pixels)
-        elif isinstance(pixels, np.ndarray):
-            # convert to 2d array
-            image_arr = pixels.astype(np.dtype('B')).reshape(
-                (self._dimensions[0], self._dimensions[1], 3))
-            image = Image.fromarray(image_arr)
+        image = pixels
 
-            # Apply some of the base output filters if necessary
-            if self._config['brightness']:
-                enhancer = ImageEnhance.Brightness(image)
-                image = enhancer.enhance(self._config['brightness'])
-            if self._config['blur'] != 0.0:
-                image = image.filter(ImageFilter.GaussianBlur(
-                    radius=self._config['blur']))
+        # Apply some of the base output filters if necessary
+        if self._config['brightness']:
+            enhancer = ImageEnhance.Brightness(image)
+            image = enhancer.enhance(self._config['brightness'])
+        if self._config['blur'] != 0.0:
+            image = image.filter(ImageFilter.GaussianBlur(
+                radius=self._config['blur']))
 
-            # horizontal flip
-            if self._config['flip']:
-                image = ImageOps.mirror(image)
+        # horizontal flip
+        if self._config['flip']:
+            image = ImageOps.mirror(image)
 
-            # reflection effect
-            if self._config['mirror']:
-               # Scale image to half width
-                hImage = image.resize(
-                    (int(self._dimensions[0] / 2), self._dimensions[1]), resample=3)
+        # reflection effect
+        if self._config['mirror']:
+            # Scale image to half width
+            hImage = image.resize(
+                (int(self._dimensions[0] / 2), self._dimensions[1]), resample=3)
 
-                image.paste(hImage, (0, 0))
-                image.paste(ImageOps.mirror(hImage),
-                            (int(self._dimensions[0] / 2), 0))
+            image.paste(hImage, (0, 0))
+            image.paste(ImageOps.mirror(hImage),
+                        (int(self._dimensions[0] / 2), 0))
 
-            self._pixels = np.array(image.getdata(), dtype=float)
-        else:
-            raise TypeError()
+        self._pixels = image
 
         self._dirty = True
 
@@ -243,7 +171,7 @@ class Effect(BaseRegistry):
     @property
     def pixel_count(self):
         """Returns the number of pixels for the channel"""
-        return len(self.pixels)
+        return self._dimensions[0]*self._dimensions[1]
 
     @property
     def name(self):
