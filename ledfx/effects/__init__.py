@@ -36,7 +36,6 @@ def fill_rainbow(pixels, initial_hue, delta_hue):
             hue = hue + delta_hue
     return pixels
 
-
 @BaseRegistry.no_registration
 class Effect(BaseRegistry):
     """
@@ -71,6 +70,14 @@ class Effect(BaseRegistry):
         self._dimensions = dimensions
         self._image = Image.new("RGB", dimensions)
         self._active = True
+    
+        # Iterate all the base classes and check to see if there is a custom
+        # implementation of config updates. If to notify the base class.
+        valid_classes = list(type(self).__bases__)
+        valid_classes.append(type(self))
+        for base in valid_classes:
+            if base.activated != super(base, base).activated:
+                base.activated(self)
 
         _LOGGER.info("Effect {} activated.".format(self.NAME))
 
@@ -108,6 +115,12 @@ class Effect(BaseRegistry):
         should be used by the subclass only if they need to build up
         complex properties off the configuration, otherwise the config
         should just be referenced in the effect's loop directly
+        """
+        pass
+
+    def activated(self):
+        """
+        Optional event if an effect was activated
         """
         pass
 

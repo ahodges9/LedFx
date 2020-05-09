@@ -8,7 +8,6 @@ import numpy as np
 
 
 class ShowImage(TemporalEffect):
-
     NAME = "Show Image"
     CONFIG_SCHEMA = vol.Schema({
     })
@@ -16,8 +15,8 @@ class ShowImage(TemporalEffect):
     _time = 0.0
     _currentFrame = 99999
 
-    def config_updated(self, config):
-        #self._config = self.AUDIO_CONFIG_SCHEMA(config)
+    def activated(self):
+        print("activated")
         self.load_images("t4518.gif")
 
     def load_images(self, imagepath):
@@ -28,10 +27,11 @@ class ShowImage(TemporalEffect):
             _input.seek(frame)
 
             # Scale the image
-            _input.thumbnail(self._dimensions, Image.NEAREST)  # Image.ANTIALIAS
+            # Image.ANTIALIAS
+            _input.thumbnail(self._dimensions, Image.NEAREST)
 
             # background color
-            _image = Image.new("RGB", this._dimensions, (255, 255, 255))
+            _image = Image.new("RGB", self._dimensions, (255, 255, 255))
 
             # paste the image on the center of a new image with a background color
             x1 = int(math.floor((_image.width - _input.width) / 2))
