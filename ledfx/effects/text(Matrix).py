@@ -1,7 +1,6 @@
 from ledfx.effects.temporal import TemporalEffect
 from ledfx.effects.fonts import FONT_LIST
 from ledfx.color import COLORS
-
 from PIL import Image, ImageFont, ImageDraw
 import voluptuous as vol
 import os
@@ -53,4 +52,4 @@ class Text(TemporalEffect):
 
         _image.paste(self._fontimage, (14-xoffset, 0), self._fontimage.convert('RGBA'))
        
-        self.pixels = _image
+        self.image = _image

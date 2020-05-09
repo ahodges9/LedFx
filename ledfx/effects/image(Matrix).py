@@ -28,15 +28,15 @@ class ShowImage(TemporalEffect):
             _input.seek(frame)
 
             # Scale the image
-            _input.thumbnail((14, 14), Image.NEAREST)  # Image.ANTIALIAS
-
-            # paste the image on the center of a new image with a background color
-            old_width, old_height = _input.size
-            x1 = int(math.floor((14 - old_width) / 2))
-            y1 = int(math.floor((14 - old_height) / 2))
+            _input.thumbnail(self._dimensions, Image.NEAREST)  # Image.ANTIALIAS
 
             # background color
-            _image = Image.new("RGB", (14, 14), (255, 255, 255))
+            _image = Image.new("RGB", this._dimensions, (255, 255, 255))
+
+            # paste the image on the center of a new image with a background color
+            x1 = int(math.floor((_image.width - _input.width) / 2))
+            y1 = int(math.floor((_image.height - _input.height) / 2))
+
             _image.paste(_input, (x1, y1), _input.convert('RGBA'))
             _image.info = _input.info  # contains duration info
 
@@ -63,5 +63,4 @@ class ShowImage(TemporalEffect):
 
         if newFrame != self._currentFrame:
             self._currentFrame = newFrame
-            self.pixels = np.array(
-                self._images[self._currentFrame].getdata(), dtype=float)
+            self.image = self._images[self._currentFrame]

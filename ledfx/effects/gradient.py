@@ -1,7 +1,8 @@
 from ledfx.effects.temporal import TemporalEffect
 from ledfx.effects.modulate import ModulateEffect
 from ledfx.color import COLORS, GRADIENTS
-from ledfx.effects import Effect
+from ledfx.effects import Effect, Effect1D
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 import logging
@@ -9,7 +10,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 @Effect.no_registration
-class GradientEffect(Effect):
+class GradientEffect(Effect1D):
     """
     Simple effect base class that supplies gradient functionality. This
     is intended for effect which instead of outputing exact colors output
@@ -160,5 +161,8 @@ class TemporalGradientEffect(TemporalEffect, GradientEffect, ModulateEffect):
         # TODO: Could add some cool effects like twinkle or sin modulation
         # of the gradient.
         # kinda done
-        pixels = self.apply_gradient(1)
+        temp = self.apply_gradient(1)
+
+        pixels = Image.fromarray(temp)
+
         self.pixels = self.modulate(pixels)

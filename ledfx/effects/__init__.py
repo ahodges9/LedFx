@@ -1,7 +1,7 @@
 from ledfx.utils import BaseRegistry, RegistryLoader
 #from ledfx.effects.audio import FREQUENCY_RANGES
 from functools import lru_cache
-from PIL import ImageFilter, Image, ImageOps, ImageEnhance
+from PIL import ImageFilter, Image, ImageOps, ImageEnhance, ImageChops
 import voluptuous as vol
 import numpy as np
 import importlib
@@ -23,15 +23,19 @@ def mix_colors(color_1, color_2, ratio):
                 color_1[1] * (1-ratio) + color_2[1] * ratio,
                 color_1[2] * (1-ratio) + color_2[2] * ratio)
 
-def fill_rainbow(pixels : Image, initial_hue, delta_hue):
+def hsv2rgb(h,s,v):
+    return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
+
+def fill_rainbow(pixels, initial_hue, delta_hue):
     hue = initial_hue
     sat = 0.95
     val = 1.0
     for y in range(0, pixels.height):
         for x in range(0, pixels.width):
-            pixels[x, y] = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(hue, sat, val))
+            pixels.putpixel((x, y), hsv2rgb(hue, sat, val))
             hue = hue + delta_hue
     return pixels
+
 
 @BaseRegistry.no_registration
 class Effect(BaseRegistry):
@@ -39,7 +43,7 @@ class Effect(BaseRegistry):
     Manages an effect
     """
     NAME = ""
-    _pixels = None
+    _image = None
     _dirty = False
     _config = None
     _active = False
@@ -65,14 +69,14 @@ class Effect(BaseRegistry):
     def activate(self, dimensions):
         """Attaches an output channel to the effect"""
         self._dimensions = dimensions
-        self._pixels = Image.new("RGB", (dimensions[0], dimensions[1]))
+        self._image = Image.new("RGB", dimensions)
         self._active = True
 
         _LOGGER.info("Effect {} activated.".format(self.NAME))
 
     def deactivate(self):
         """Detaches an output channel from the effect"""
-        self._pixels = None
+        self._image = None
         self._active = False
 
         _LOGGER.info("Effect {} deactivated.".format(self.NAME))
@@ -118,47 +122,45 @@ class Effect(BaseRegistry):
         return self._dimensions[1] > 1
 
     @property
-    def pixels(self):
+    def image(self):
         """Returns the pixels for the channel"""
         if not self._active:
             raise Exception(
-                'Attempting to access pixels before effect is active')
+                'Attempting to access image before effect is active')
 
-        return self._pixels.copy()
+        return self._image.copy()
 
-    @pixels.setter
-    def pixels(self, pixels):
+    @image.setter
+    def image(self, input):
         """Sets the pixels for the channel"""
         if not self._active:
             _LOGGER.warning(
-                'Attempting to set pixels before effect is active. Dropping.')
+                'Attempting to set image before effect is active. Dropping.')
             return
-
-        image = pixels
 
         # Apply some of the base output filters if necessary
         if self._config['brightness']:
-            enhancer = ImageEnhance.Brightness(image)
-            image = enhancer.enhance(self._config['brightness'])
+            enhancer = ImageEnhance.Brightness(input)
+            input = enhancer.enhance(self._config['brightness'])
         if self._config['blur'] != 0.0:
-            image = image.filter(ImageFilter.GaussianBlur(
+            input = input.filter(ImageFilter.GaussianBlur(
                 radius=self._config['blur']))
 
         # horizontal flip
         if self._config['flip']:
-            image = ImageOps.mirror(image)
+            input = ImageOps.mirror(input)
 
         # reflection effect
         if self._config['mirror']:
             # Scale image to half width
-            hImage = image.resize(
+            hImage = input.resize(
                 (int(self._dimensions[0] / 2), self._dimensions[1]), resample=3)
 
-            image.paste(hImage, (0, 0))
-            image.paste(ImageOps.mirror(hImage),
+            input.paste(hImage, (0, 0))
+            input.paste(ImageOps.mirror(hImage),
                         (int(self._dimensions[0] / 2), 0))
 
-        self._pixels = image
+        self._image = input
 
         self._dirty = True
 
@@ -169,13 +171,49 @@ class Effect(BaseRegistry):
         self._dirty_callback = callback
 
     @property
-    def pixel_count(self):
-        """Returns the number of pixels for the channel"""
-        return self._dimensions[0]*self._dimensions[1]
-
-    @property
     def name(self):
         return self.NAME
+
+@BaseRegistry.no_registration
+class Effect1D(Effect):
+    """This upgrades 1D effects for use with 2d LED arrays."""
+
+    _pixels = None
+
+    def activate(self, dimensions):
+        super().activate(dimensions)
+        self._pixels = Image.new("RGB", (dimensions[0], 1))
+
+    @property
+    def pixel_count(self):
+        """Returns the number of pixels for the channel"""
+        return self._pixels.width
+
+    @property
+    def pixels(self):
+        """Returns the pixels for the channel"""
+        if not self._active:
+            raise Exception(
+                'Attempting to access pixels before effect is active')
+
+        return self._pixels.copy()
+
+    @pixels.setter
+    def pixels(self, pixels):
+        """Transform pixels to 2d matrix"""
+
+        self._pixels = pixels
+
+        # Filter and update the pixel values
+        if self.is_2d:
+            temp = ImageChops.offset(self.image, 1, 0) # scroll right 1 pixel
+
+            # add new values at the left
+            temp.paste(pixels.rotate(90, expand=True), (0, 0))
+            
+            self.image = temp
+        else:
+            self.image = pixels
 
 
 class Effects(RegistryLoader):

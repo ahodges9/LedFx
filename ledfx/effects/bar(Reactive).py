@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw
 import voluptuous as vol
 import numpy as np
 
+
 class BarAudioEffect(AudioReactiveEffect, GradientEffect):
 
     NAME = "Bar"
@@ -68,9 +69,10 @@ class BarAudioEffect(AudioReactiveEffect, GradientEffect):
 
         # Construct the bar
         color = self.get_gradient_color(self.color_idx)
-        image = Image.new("RGB", self._dimensions, color=0)
+        image = Image.new("RGB", (self.pixel_count, 1), color=0)
         d = ImageDraw.Draw(image)
-        d.rectangle(((int(self.pixel_count*bar_start), 0), (int(self.pixel_count*bar_end), self._dimensions[1])), fill=tuple(color.astype('b')))
+        d.rectangle(((int(self.pixel_count*bar_start), 0),
+                     (int(self.pixel_count*bar_end), 1)), fill=tuple(color.astype('b')))
 
         # Update the pixel values
-        self.pixels=image
+        self.strip = image

@@ -126,7 +126,7 @@ class Device(BaseRegistry):
         """
         frame = None
         if self._active_effect._dirty:
-            raw_pixels = np.array(self._active_effect.pixels.getdata())
+            raw_pixels = np.array(self._active_effect.image.getdata())
             frame = np.clip(raw_pixels * self._config['max_brightness'], 0, 255)
             if self._config['center_offset']:
                 frame = np.roll(frame, self._config['center_offset'], axis=0)

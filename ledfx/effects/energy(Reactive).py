@@ -1,9 +1,10 @@
 from ledfx.effects.audio import AudioReactiveEffect
+from ledfx.effects import Effect1D
 from ledfx.color import COLORS
 import voluptuous as vol
 import numpy as np
 
-class EnergyAudioEffect(AudioReactiveEffect):
+class EnergyAudioEffect(AudioReactiveEffect, Effect1D):
 
     NAME = "Energy"
     CONFIG_SCHEMA = vol.Schema({
@@ -28,13 +29,6 @@ class EnergyAudioEffect(AudioReactiveEffect):
         self.high_colour = np.array(COLORS[self._config['color_high']], dtype=float)
 
     def audio_data_updated(self, data):
-
-        num = self.pixel_count
-
-        # mode than one row? Use height as number!
-        if self.is_2d:
-            num = self._dimensions[1]
-
         # Calculate the low, mids, and high indexes scaling based on the pixel count
         lows_idx = int(np.mean(self.pixel_count * data.melbank_lows()))
         mids_idx = int(np.mean(self.pixel_count * data.melbank_mids()))
@@ -52,19 +46,4 @@ class EnergyAudioEffect(AudioReactiveEffect):
             p[:mids_idx] = self.mids_colour
             p[:highs_idx] = self.high_colour
 
-        # Filter and update the pixel values
-        if self.is_2d:
-            temp = self.pixels.copy()
-
-            # scroll left 1 pixel
-            w = self._dimensions[0]
-            newpix = self._p_filter.update(p)
-
-            for row in range(0, self._dimensions[1], 1):
-                temp[row*w:row*w+w-1] = temp[row*w+1:row*w+w:1]
-                temp[row*w+w-1] = newpix[row]
-            
-            # add new values at the right
-            self.pixels = temp
-        else:
-            self.pixels = self._p_filter.update(p)
+        self.pixels = self._p_filter.update(p)
