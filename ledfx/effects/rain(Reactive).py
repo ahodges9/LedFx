@@ -1,6 +1,7 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects.effectlets import EFFECTLET_LIST
 from ledfx.color import COLORS
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 from random import randint

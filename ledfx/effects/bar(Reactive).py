@@ -75,4 +75,4 @@ class BarAudioEffect(AudioReactiveEffect, GradientEffect):
                      (int(self.pixel_count*bar_end), 1)), fill=tuple(color.astype('b')))
 
         # Update the pixel values
-        self.strip = image
+        self.pixels = image

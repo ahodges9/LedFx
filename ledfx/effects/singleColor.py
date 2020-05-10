@@ -14,7 +14,7 @@ class SingleColorEffect(TemporalEffect, ModulateEffect):
     })
 
     def config_updated(self, config):
-        self.color = np.array(COLORS[self._config['color']], dtype=float)
+        self.color = np.array(COLORS[self._config['color']], dtype='B')
 
     def effect_loop(self):
-        self.pixels = Image.new("RGB", (self.pixel_count, 1), color=self.color)
+        self.image = Image.new("RGB", self._dimensions, color=tuple(self.color))

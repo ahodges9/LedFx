@@ -2,6 +2,7 @@ from ledfx.effects.audio import AudioReactiveEffect, MIN_MIDI, MAX_MIDI
 from ledfx.effects.gradient import GradientEffect
 from ledfx.effects import mix_colors
 from ledfx.color import COLORS
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 import aubio

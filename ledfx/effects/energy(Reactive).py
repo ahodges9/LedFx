@@ -1,6 +1,7 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects import Effect1D
 from ledfx.color import COLORS
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 
@@ -36,7 +37,7 @@ class EnergyAudioEffect(AudioReactiveEffect, Effect1D):
 
         # Build the new energy profile based on the mids, highs and lows setting
         # the colors as red, green, and blue channel respectively
-        p = np.zeros(np.shape(self.pixels))
+        p = np.zeros((self.pixel_count, 1, 3))
         if self._config["mixing_mode"] == "additive":
             p[:lows_idx] = self.lows_colour
             p[:mids_idx] += self.mids_colour
@@ -46,4 +47,6 @@ class EnergyAudioEffect(AudioReactiveEffect, Effect1D):
             p[:mids_idx] = self.mids_colour
             p[:highs_idx] = self.high_colour
 
-        self.pixels = self._p_filter.update(p)
+        temp = self._p_filter.update(p)
+
+        self.pixels = Image.fromarray(temp.astype(np.dtype('B')))

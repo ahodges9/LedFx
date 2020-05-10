@@ -60,7 +60,7 @@ class ModulateEffect(Effect):
 
             d = ImageDraw.Draw(pixels)
             d.rectangle((((int(self._breath_cycle[int(self._counter)]
-                              * self.pixel_count)), 0), (self._dimensions[0], self._dimensions[1])), fill=0)
+                              * self.pixel_count)), 0), (1, self.pixel_count)), fill=0)
             return pixels
 
         else:

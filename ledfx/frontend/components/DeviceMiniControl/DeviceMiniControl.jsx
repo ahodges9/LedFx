@@ -58,7 +58,7 @@ class DeviceMiniControl extends React.Component {
     }
     else
     {
-      this.props.dispatch(setDeviceEffect(this.props.device.id, 'wavelength', null));
+      this.props.dispatch(setDeviceEffect(this.props.device.id, 'wavelength(Reactive)', null));
     }
   }
 

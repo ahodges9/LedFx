@@ -135,21 +135,8 @@ class Effect(BaseRegistry):
         return self._dimensions[1] > 1
 
     @property
-    def image(self):
-        """Returns the pixels for the channel"""
-        if not self._active:
-            raise Exception(
-                'Attempting to access image before effect is active')
-
-        return self._image.copy()
-
-    @image.setter
-    def image(self, input):
-        """Sets the pixels for the channel"""
-        if not self._active:
-            _LOGGER.warning(
-                'Attempting to set image before effect is active. Dropping.')
-            return
+    def outputimage(self):
+        input = self.image
 
         # Apply some of the base output filters if necessary
         if self._config['brightness']:
@@ -173,8 +160,25 @@ class Effect(BaseRegistry):
             input.paste(ImageOps.mirror(hImage),
                         (int(self._dimensions[0] / 2), 0))
 
-        self._image = input
+        return input
 
+    @property
+    def image(self):
+        """Returns the pixels for the channel"""
+        if not self._active:
+            raise Exception(
+                'Attempting to access image before effect is active')
+
+        return self._image
+
+    @image.setter
+    def image(self, input):
+        """Sets the pixels for the channel"""
+        if not self._active:
+            _LOGGER.warning(
+                'Attempting to set image before effect is active. Dropping.')
+            return
+        self._image = input
         self._dirty = True
 
         if self._dirty_callback:
@@ -200,7 +204,7 @@ class Effect1D(Effect):
     @property
     def pixel_count(self):
         """Returns the number of pixels for the channel"""
-        return self._pixels.width
+        return self._dimensions[0]
 
     @property
     def pixels(self):

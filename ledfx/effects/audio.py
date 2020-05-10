@@ -499,7 +499,7 @@ class MelbankInputSource(AudioInputSource):
 
 
     @lru_cache(maxsize=32)
-    def _gaussian_kernel1d(sigma, order, radius):
+    def _gaussian_kernel1d(self, sigma, order, radius):
         if order < 0:
             raise ValueError('order must be non-negative')
         p = np.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])
@@ -516,8 +516,7 @@ class MelbankInputSource(AudioInputSource):
             phi_x *= q(x)
         return phi_x
 
-
-    def smooth(x, sigma):
+    def smooth(self, x, sigma):
         lw = int(4.0 * float(sigma) + 0.5)
         w = self._gaussian_kernel1d(sigma, 0, lw)
         window_len = len(w)
@@ -536,7 +535,7 @@ class MelbankInputSource(AudioInputSource):
         if self.volume() > self._config['min_volume']:
             # Compute the filterbank from the frequency information
             raw_filter_banks = self.filterbank(self.frequency_domain())
-            raw_filter_banks = raw_filter_banks ** 2.0
+            raw_filter_banks = raw_filter_banks ** 2.0 
 
             self.mel_gain.update(np.max(self.smooth(raw_filter_banks, sigma=1.0)))
             filter_banks = raw_filter_banks / self.mel_gain.value

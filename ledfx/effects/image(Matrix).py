@@ -13,10 +13,9 @@ class ShowImage(TemporalEffect):
     })
     _images = []
     _time = 0.0
-    _currentFrame = 99999
+    _currentFrame = -1
 
     def activated(self):
-        print("activated")
         self.load_images("t4518.gif")
 
     def load_images(self, imagepath):
