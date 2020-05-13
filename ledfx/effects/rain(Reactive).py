@@ -1,5 +1,6 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects.effectlets import EFFECTLET_LIST
+from ledfx.effects import Effect1D
 from ledfx.color import COLORS
 from PIL import Image
 import voluptuous as vol
@@ -7,7 +8,7 @@ import numpy as np
 from random import randint
 import os.path
 
-class RainAudioEffect(AudioReactiveEffect):
+class RainAudioEffect(AudioReactiveEffect, Effect1D):
 
     NAME = "Rain"
     CONFIG_SCHEMA = vol.Schema({
@@ -84,7 +85,6 @@ class RainAudioEffect(AudioReactiveEffect):
                                 np.mean(data.melbank_mids()), 
                                 np.mean(data.melbank_highs())])
 
-
         self.update_drop_frames()
 
         if intensities[0] - self.filtered_intensities[0] > self._config["lows_sensitivity"]:
@@ -96,6 +96,6 @@ class RainAudioEffect(AudioReactiveEffect):
 
         self.filtered_intensities = self.intensity_filter.update(intensities)
 
-
-        self.pixels = self.get_drops()
+        data = self.get_drops()
+        self.pixels = Image.fromarray(data.astype(np.dtype('B')))
         
