@@ -150,10 +150,16 @@ class AudioInputSource(object):
         # Implement a simple delay to compensate for audio output latency
         self._audioQueue.appendleft(np.fromstring(in_data, dtype=np.float32))
 
-        if len(self._audioQueue) > self._config['device_latency'] / 1000 * self._config['sample_rate']:
+        wantedLen = self._config['device_latency'] / 1000 * self._config['sample_rate']
+
+        if len(self._audioQueue) > wantedLen:
             self._raw_audio_sample = self._audioQueue.pop()
         else:
             self._raw_audio_sample = self._audioQueue[0]
+
+        # drop blocks until the queue length is as expected
+        while len(self._audioQueue) > wantedLen:
+            self._audioQueue.pop()
 
         self.pre_process_audio()
         self._invalidate_caches()
