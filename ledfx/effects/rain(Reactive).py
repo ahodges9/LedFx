@@ -97,5 +97,6 @@ class RainAudioEffect(AudioReactiveEffect, Effect1D):
         self.filtered_intensities = self.intensity_filter.update(intensities)
 
         data = self.get_drops()
-        self.pixels = Image.fromarray(data.astype(np.dtype('B')))
+        temp = data.reshape((-1, 1, 3)).astype(np.dtype('B'))
+        self.pixels = Image.fromarray(temp)
         

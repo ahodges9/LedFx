@@ -226,7 +226,7 @@ class Effect1D(Effect):
             temp = ImageChops.offset(self.image, 1, 0) # scroll right 1 pixel
 
             # add new values at the left
-            temp.paste(pixels.rotate(90, expand=True), (0, 0))
+            temp.paste(pixels, (0, 0))
             
             self.image = temp
         else:
