@@ -163,6 +163,8 @@ class TemporalGradientEffect(TemporalEffect, GradientEffect, ModulateEffect):
         # kinda done
         temp = self.apply_gradient(1)
 
-        pixels = Image.fromarray(temp)
+        temp = self.modulate(temp)
+        temp = temp.reshape((-1, 1, 3)).astype(np.dtype('B'))
 
-        self.pixels = self.modulate(pixels)
+        self.pixels = Image.fromarray(temp)
+

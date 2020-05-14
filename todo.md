@@ -5,6 +5,7 @@
 - First effect change is ignored?
 - Number fields do not accept leading 0
 - Hide effect visualizer for 1d devices?
+- Presets dont work sometimes?
 
 ## Backend
 

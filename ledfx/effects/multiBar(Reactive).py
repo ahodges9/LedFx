@@ -1,7 +1,7 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects.gradient import GradientEffect
 from ledfx.color import GRADIENTS
-from PIL import Image
+from PIL import Image, ImageDraw
 import voluptuous as vol
 import numpy as np
 
@@ -55,5 +55,12 @@ class MultiBarAudioEffect(AudioReactiveEffect, GradientEffect):
         p = np.zeros(np.shape(self.pixels))
         p[:int(self.pixel_count*idx), :] = color_bkg
         p[int(self.pixel_count*idx):, :] = color_fg
+
+        image = Image.new("RGB", (1, self.pixel_count), color=tuple(color_bkg.astype('b')))
+
+        d = ImageDraw.Draw(image)
+        d.rectangle(((int(self.pixel_count*idx), 0),
+                     (int(self.pixel_count), 1)), fill=tuple(color_fg.astype('b')))
+
         # Update the pixel values
-        self.pixels = p
+        self.pixels = image
