@@ -37,7 +37,7 @@ class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
         self.mids_cutoff = self._config['threshold'] / 4
         self.high_cutoff = self._config['threshold'] / 7
 
-        self.lastValues = np.zeros((self.pixel_count, 1, 3))
+        self.lastValues = np.zeros((self.pixel_count, 3))
 
     def audio_data_updated(self, data):
         # Divide the melbank into lows, mids and highs
@@ -59,7 +59,7 @@ class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
 
         # Roll the effect and apply the decay
         speed = self.config['speed']
-        self.lastValues[speed:,0,:] = self.lastValues[:-speed,0,:]
+        self.lastValues[speed:,:] = self.lastValues[:-speed,:]
         self.lastValues = (self.lastValues * self.config['decay'])
 
         # Add in the new color from the signal maxes
@@ -67,9 +67,9 @@ class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
         #self.output[:speed, 1] = lows_val[1] + mids_val[1] + high_val[1]
         #self.output[:speed, 2] = lows_val[2] + mids_val[2] + high_val[2]
 
-        self.lastValues[:speed,0] = self.lows_colour * lows_max
-        self.lastValues[:speed,0] += self.mids_colour * mids_max
-        self.lastValues[:speed,0] += self.high_colour * highs_max
+        self.lastValues[:speed] = self.lows_colour * lows_max
+        self.lastValues[:speed] += self.mids_colour * mids_max
+        self.lastValues[:speed] += self.high_colour * highs_max
 
         # Set the pixels
-        self.pixels = Image.fromarray(self.lastValues.astype(np.dtype('B')))
+        self.pixels = Image.fromarray(self.lastValues.reshape((1, -1, 3)).astype(np.dtype('B')))

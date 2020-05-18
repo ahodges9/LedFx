@@ -37,15 +37,16 @@ class Strobe(AudioReactiveEffect):
 
         image = None
 
-        # draw curve
+        # use previous image, darken and blur it a bit
         if self._prevImage != None:
             image = self._prevImage
             enhancer = ImageEnhance.Brightness(image)
             image = enhancer.enhance(0.9)
-            image = image.filter(ImageFilter.GaussianBlur(radius=1))
+            image = image.filter(ImageFilter.GaussianBlur(radius=0.7))
         else:
             image = Image.new("RGB", self._dimensions, color=0)
 
+        # draw curve
         img1 = ImageDraw.Draw(image)
         for x in range(1, self._dimensions[0]):
             img1.line(((x-1, int(arr[x-1]*dy+self._dimensions[1]/2)),

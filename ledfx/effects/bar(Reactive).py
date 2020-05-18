@@ -72,7 +72,7 @@ class BarAudioEffect(AudioReactiveEffect, GradientEffect):
         image = Image.new("RGB", (self.pixel_count, 1), color=0)
         d = ImageDraw.Draw(image)
         d.rectangle(((int(self.pixel_count*bar_start), 0),
-                     (int(self.pixel_count*bar_end), 1)), fill=tuple(color.astype('b')))
+                     (int(self.pixel_count*bar_end), 1)), fill=tuple(color.astype('B')))
 
         # Update the pixel values
         self.pixels = image

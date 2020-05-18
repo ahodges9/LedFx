@@ -33,4 +33,4 @@ class WavelengthAudioEffect(AudioReactiveEffect, GradientEffect):
         values = self.apply_gradient(r)
 
         self.pixels = Image.fromarray(
-            values.reshape((-1, 1, 3)).astype(np.dtype('B')))
+            values.reshape((1, -1, 3)).astype(np.dtype('B')))

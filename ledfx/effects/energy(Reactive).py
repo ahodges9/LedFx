@@ -37,7 +37,7 @@ class EnergyAudioEffect(AudioReactiveEffect, Effect1D):
 
         # Build the new energy profile based on the mids, highs and lows setting
         # the colors as red, green, and blue channel respectively
-        p = np.zeros((self.pixel_count, 1, 3))
+        p = np.zeros((1, self.pixel_count, 3))
         if self._config["mixing_mode"] == "additive":
             p[:lows_idx] = self.lows_colour
             p[:mids_idx] += self.mids_colour

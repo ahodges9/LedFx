@@ -31,6 +31,5 @@ class FadeEffect(TemporalEffect, GradientEffect):
             i = self.idx
         else:
             i = 1-self.idx        
-
         color = self.get_gradient_color(i)
-        self.pixels = Image.new("RGB", (self.pixel_count, 1), color=tuple(color.astype('b')))
+        self.pixels = Image.new("RGB", (self.pixel_count, 1), color=tuple(color.astype('B')))

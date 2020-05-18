@@ -23,4 +23,4 @@ class Strobe(AudioReactiveEffect):
     def audio_data_updated(self, data):
         beat_oscillator, beat_now = data.oscillator()
         brightness = (-beat_oscillator % (2 / self.f)) * (self.f / 2)
-        self.image = Image.new("RGB", self._dimensions, color=tuple((self.color*brightness).astype('b')))
+        self.image = Image.new("RGB", self._dimensions, color=tuple((self.color*brightness).astype('B')))

@@ -46,7 +46,7 @@ class Text(TemporalEffect):
         self._time = self._time+0.01
 
         # background color
-        _image = Image.new("RGB", (14, 14), self.config['bg_color'])
+        _image = Image.new("RGB", self._dimensions, self.config['bg_color'])
 
         xoffset = int(self._time) % (self._size[0]+2*14)
 

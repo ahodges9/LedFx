@@ -37,5 +37,5 @@ class SpectrumAudioEffect(AudioReactiveEffect, Effect1D):
         self._prev_y = y
 
         output = np.array([r,g,b]) * 255
-        output = output.reshape((-1, 1, 3)).astype(np.dtype('B'))
+        output = output.reshape((1, -1, 3)).astype(np.dtype('B'))
         self.pixels = Image.fromarray(output)

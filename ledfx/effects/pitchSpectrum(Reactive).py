@@ -52,6 +52,6 @@ class PitchSpectrumAudioEffect(AudioReactiveEffect, GradientEffect):
             new_pixels[index, 0] = new_color
         self.lastValues = new_pixels
 
-        temp = new_pixels.reshape((-1, 1, 3)).astype(np.dtype('B'))
+        temp = new_pixels.reshape((1, -1, 3)).astype(np.dtype('B'))
         self.pixels = Image.fromarray(temp)
 

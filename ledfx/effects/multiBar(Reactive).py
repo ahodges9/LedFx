@@ -56,11 +56,11 @@ class MultiBarAudioEffect(AudioReactiveEffect, GradientEffect):
         p[:int(self.pixel_count*idx), :] = color_bkg
         p[int(self.pixel_count*idx):, :] = color_fg
 
-        image = Image.new("RGB", (1, self.pixel_count), color=tuple(color_bkg.astype('b')))
+        image = Image.new("RGB", (self.pixel_count, 1), color=tuple(color_bkg.astype('B')))
 
         d = ImageDraw.Draw(image)
         d.rectangle(((int(self.pixel_count*idx), 0),
-                     (int(self.pixel_count), 1)), fill=tuple(color_fg.astype('b')))
+                     (int(self.pixel_count), 1)), fill=tuple(color_fg.astype('B')))
 
         # Update the pixel values
         self.pixels = image

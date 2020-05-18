@@ -9,10 +9,7 @@
 
 ## Backend
 
-- Sensivity too low?
-- Make all effects work
 - 2d Effects:
-  - Waveform
   - Spectral analyser
   - Rectangle sprayer
 - More options for 1d Effects

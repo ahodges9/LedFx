@@ -223,9 +223,9 @@ class Effect1D(Effect):
 
         # Filter and update the pixel values
         if self.is_2d:
-            temp = ImageChops.offset(self.image, 1, 0) # scroll right 1 pixel
+            temp = ImageChops.offset(self.image, 0, 1) # scroll down 1 pixel
 
-            # add new values at the left
+            # add new values at the top
             temp.paste(pixels, (0, 0))
             
             self.image = temp

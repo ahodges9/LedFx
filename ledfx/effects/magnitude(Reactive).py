@@ -26,5 +26,5 @@ class MagnitudeAudioEffect(AudioReactiveEffect, GradientEffect):
 
         temp = self.apply_gradient(magnitude)
 
-        temp = temp.reshape((-1, 1, 3)).astype(np.dtype('B'))
+        temp = temp.reshape((1, -1, 3)).astype(np.dtype('B'))
         self.pixels = Image.fromarray(temp)

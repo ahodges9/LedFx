@@ -93,7 +93,7 @@ class GradientEffect(Effect1D):
         t = np.zeros(gradient_length)
         ease_chunks = np.array_split(t, n_colors-1)
         color_pairs = np.array([(self.rgb_list.T[i], self.rgb_list.T[i+1]) for i in range(n_colors-1)])
-        gradient = np.hstack(self._color_ease(len(ease_chunks[i]), *color_pairs[i]) for i in range(n_colors-1))
+        gradient = np.hstack(list(self._color_ease(len(ease_chunks[i]), *color_pairs[i]) for i in range(n_colors-1)))
         _LOGGER.info(('Generating new gradient curve for {}'.format(gradient_colors)))
         self._gradient_curve = gradient
 
