@@ -12,6 +12,7 @@ class Strobe(AudioReactiveEffect):
     })
 
     _prevImage = None
+    _scale = 1
 
     def config_updated(self, config):
         return
@@ -26,10 +27,16 @@ class Strobe(AudioReactiveEffect):
             arr.append(np.mean(samples[int(x*dx):int((x+1)*dx)]))
 
         # determine scaling factor
-        dy = self._dimensions[1] / max(max(map(abs, arr)), 0.1) / 2
-        
+        peak = max(map(abs, arr))
+
+        # slowly adjust scaling factor
+        if abs(peak-self._scale) > 0.1:
+            self._scale = self._scale - (self._scale - peak)/100
+
+        dy = self._dimensions[1] / 2 / self._scale
+
         image = None
-        
+
         # draw curve
         if self._prevImage != None:
             image = self._prevImage
