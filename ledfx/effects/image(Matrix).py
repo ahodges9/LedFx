@@ -1,4 +1,5 @@
 from ledfx.effects.temporal import TemporalEffect
+from ledfx.effects.animations import ANIMATION_LIST
 from PIL import Image
 import voluptuous as vol
 import os
@@ -10,17 +11,26 @@ import numpy as np
 class ShowImage(TemporalEffect):
     NAME = "Show Image"
     CONFIG_SCHEMA = vol.Schema({
+        vol.Required('image_name', description='image', default="144.gif"): vol.In(list(ANIMATION_LIST)),
     })
     _images = []
     _time = 0.0
     _currentFrame = -1
 
-    def activated(self):
-        self.load_images("t4518.gif")
+    def config_updated(self, config):
+        self.load_images()
 
-    def load_images(self, imagepath):
+    def activated(self):
+        self.load_images()
+
+    def load_images(self):
+        if self._dimensions[0] <= 0:
+            return
+
+        animation_path = os.path.join(os.path.dirname(
+            __file__), "animations/" + self.config['image_name'])
         _images = []
-        _input = Image.open(imagepath)
+        _input = Image.open(animation_path)
 
         for frame in range(0, _input.n_frames):
             _input.seek(frame)
@@ -42,6 +52,8 @@ class ShowImage(TemporalEffect):
             _images.append(_image)
 
         self._images = _images
+        _currentFrame = -1
+        _time = 0
 
     def effect_loop(self):
         self._time = self._time+0.01
