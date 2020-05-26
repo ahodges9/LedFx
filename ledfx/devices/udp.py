@@ -12,7 +12,6 @@ class UDPDevice(Device):
     CONFIG_SCHEMA = vol.Schema({
         vol.Required('ip_address', description='Hostname or IP address of the device'): str,
         vol.Required('port', description='Port for the UDP device'): vol.All(vol.Coerce(int), vol.Range(min=1, max=65535)),
-        vol.Required('pixel_count', description='Number of individual pixels'): vol.All(vol.Coerce(int), vol.Range(min=1)),
         vol.Optional('include_indexes', description='Include the index for every LED', default=False): bool,
         vol.Optional('data_prefix', description='Data to be appended in hex format'): str,
         vol.Optional('data_postfix', description='Data to be prepended in hex format'): str,
@@ -26,10 +25,6 @@ class UDPDevice(Device):
         super().deactivate()
         self._sock = None
 
-    @property
-    def pixel_count(self):
-        return int(self._config['pixel_count'])
-
     def flush(self, data):
         udpData = bytearray()
         byteData = data.astype(np.dtype('B'))
@@ -40,6 +35,7 @@ class UDPDevice(Device):
             udpData.extend(bytes.fromhex(prefix))
 
         # Append all of the pixel data
+
         if self._config['include_indexes']:
             for i in range(len(byteData)):
                 udpData.extend(bytes([i]))

@@ -13,7 +13,6 @@ class E131Device(Device):
 
     CONFIG_SCHEMA = vol.Schema({
         vol.Required('ip_address', description='Hostname or IP address of the device'): str,
-        vol.Required('pixel_count', description='Number of individual pixels'): vol.All(vol.Coerce(int), vol.Range(min=1)),
         vol.Optional('universe', description='DMX universe for the device', default=1): vol.All(vol.Coerce(int), vol.Range(min=1)),
         vol.Optional('universe_size', description='Size of each DMX universe', default=512): vol.All(vol.Coerce(int), vol.Range(min=1)),
         vol.Optional('channel_offset', description='Channel offset within the DMX universe', default=0): vol.All(vol.Coerce(int), vol.Range(min=0))
@@ -23,10 +22,7 @@ class E131Device(Device):
         super().__init__(ledfx, config)
 
         # Allow for configuring in terms of "pixels" or "channels"
-        if 'pixel_count' in self._config:
-            self._config['channel_count'] = self._config['pixel_count'] * 3
-        else:
-            self._config['pixel_count'] = self._config['channel_count'] // 3
+        self._config['channel_count'] = self.pixel_count * 3
 
         span = self._config['channel_offset'] + self._config['channel_count'] - 1
         self._config['universe_end'] = self._config['universe'] + int(span / self._config['universe_size'])
@@ -34,10 +30,6 @@ class E131Device(Device):
             self._config['universe_end'] -= 1
 
         self._sacn = None
-
-    @property
-    def pixel_count(self):
-        return int(self._config['pixel_count'])
 
     def activate(self):
         if self._sacn:

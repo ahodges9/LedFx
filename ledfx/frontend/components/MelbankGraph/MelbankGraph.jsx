@@ -89,7 +89,7 @@ class PixelColorGraph extends React.Component {
     chartOptions.scales.yAxes[0].ticks.max = Math.max(chartOptions.scales.yAxes[0].ticks.max, melbankMax)
     chartOptions.scales.yAxes[0].ticks.stepSize = chartOptions.scales.yAxes[0].ticks.max / 4
 
-    this.setState(...this.state, {chartData: chartData, chartOptions: chartOptions})
+    this.setState({chartData: chartData, chartOptions: chartOptions})
   }
 
   handleOpen = e => {
@@ -131,13 +131,13 @@ class PixelColorGraph extends React.Component {
       onerror: e => console.log('WebSocket Error:', e)
     });
 
-    this.setState(...this.state, {ws: ws});
+    this.setState( {ws: ws});
   }
 
   disconnectWebsocket = () => {
     if (this.state.ws != undefined) {
       this.state.ws.close(1000);
-      this.setState(...this.state, {ws: undefined});
+      this.setState({ws: undefined});
     }
   }
 
@@ -153,7 +153,7 @@ class PixelColorGraph extends React.Component {
     const { classes } = this.props;
     
     return (
-      <Card>
+      <Card variant="outlined">
         <CardContent className={classes.content}>
           <Line data={this.state.chartData} options={this.state.chartOptions}/>
         </CardContent>

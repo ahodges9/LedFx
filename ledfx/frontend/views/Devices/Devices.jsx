@@ -1,34 +1,28 @@
 import React from "react";
-import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
-
-import Typography from '@material-ui/core/Typography';
-//import Slider from '@material-ui/core/Slider';
-import Input from '@material-ui/core/Input';
-import { connect } from "react-redux";
 
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
-import AddIcon from "@material-ui/icons/Add";
 
 import DevicesTable from "frontend/components/DevicesTable/DevicesTable.jsx";
 import DeviceConfigDialog from "frontend/components/DeviceConfigDialog/DeviceConfigDialog.jsx";
 
-const styles = theme => ({
+const styles = (theme) => ({
   cardResponsive: {
     width: "100%",
-    overflowX: "auto"
+    overflowX: "auto",
   },
   button: {
     position: "absolute",
-    bottom: theme.spacing.unit * 2,
-    right: theme.spacing.unit * 2
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
   },
   dialogButton: {
-    float: "right"
-  }
+    float: "right",
+  },
 });
 
 class DevicesView extends React.Component {
@@ -36,43 +30,59 @@ class DevicesView extends React.Component {
     super(props);
 
     this.state = {
-      addDialogOpened: false
+      addDialogOpened: false,
+      editDialogModel: undefined,
     };
   }
 
   openAddDeviceDialog = () => {
-    this.setState(...this.state, { addDialogOpened: true });
+    this.setState({ addDialogOpened: true });
   };
 
   closeAddDeviceDialog = () => {
-    this.setState(...this.state, { addDialogOpened: false });
+    this.setState({ addDialogOpened: false });
   };
 
   render() {
     const { classes, schemas } = this.props;
     return (
       <div>
-        <Grid container spacing={16}>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            <Card>
+            <Card variant="outlined">
+              <CardHeader
+                title="Devices"
+                subheader="View and manage all your devices connected to LedFx"
+              />
               <CardContent>
-                <DevicesTable />
+                <DevicesTable
+                  editDevice={(device) => {
+                    this.setState({ editDialogModel: device });
+                  }}
+                />
               </CardContent>
             </Card>
           </Grid>
         </Grid>
         <Button
-          variant="fab"
+          variant="contained"
           color="primary"
           aria-label="Add"
           className={classes.button}
           onClick={this.openAddDeviceDialog}
         >
-          <AddIcon />
+          Add Device
         </Button>
         <DeviceConfigDialog
           open={this.state.addDialogOpened}
           onClose={this.closeAddDeviceDialog}
+        />
+        <DeviceConfigDialog
+          open={!!this.state.editDialogModel}
+          initialModel={this.state.editDialogModel}
+          onClose={() => {
+            this.setState({ editDialogModel: undefined });
+          }}
         />
       </div>
     );

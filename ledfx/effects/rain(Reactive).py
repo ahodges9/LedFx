@@ -1,24 +1,26 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects.effectlets import EFFECTLET_LIST
+from ledfx.effects import Effect1D
 from ledfx.color import COLORS
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 from random import randint
 import os.path
 
-class RainAudioEffect(AudioReactiveEffect):
+class RainAudioEffect(AudioReactiveEffect, Effect1D):
 
     NAME = "Rain"
     CONFIG_SCHEMA = vol.Schema({
         vol.Optional('mirror', description='Mirror the effect', default = True): bool,
         # TODO drops should be controlled by some sort of effectlet class, which will provide a list of available drop names rather than just this static range
-        vol.Optional('raindrop_animation', description='Animation style for each drop', default = EFFECTLET_LIST[0]): vol.In(list(EFFECTLET_LIST)),
         vol.Optional('lows_colour', description='Colour for low sounds, ie beats', default = 'white'): vol.In(list(COLORS.keys())),
         vol.Optional('mids_colour', description='Colour for mid sounds, ie vocals', default = 'red'): vol.In(list(COLORS.keys())),
         vol.Optional('high_colour', description='Colour for high sounds, ie hi hat', default = 'blue'): vol.In(list(COLORS.keys())),
-        vol.Optional('lows_sensitivity', description='Sensitivity to low sounds', default = 0.2): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
-        vol.Optional('mids_sensitivity', description='Sensitivity to mid sounds', default = 0.1): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
-        vol.Optional('high_sensitivity', description='Sensitivity to high sounds', default = 0.03): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
+        vol.Optional('lows_sensitivity', description='Sensitivity to low sounds', default = 0.05): vol.All(vol.Coerce(float), vol.Range(min=0.03, max=0.3)),
+        vol.Optional('mids_sensitivity', description='Sensitivity to mid sounds', default = 0.05): vol.All(vol.Coerce(float), vol.Range(min=0.03, max=0.3)),
+        vol.Optional('high_sensitivity', description='Sensitivity to high sounds', default = 0.05): vol.All(vol.Coerce(float), vol.Range(min=0.03, max=0.3)),
+        vol.Optional('raindrop_animation', description='Droplet animation style', default = EFFECTLET_LIST[0]): vol.In(list(EFFECTLET_LIST)),
     })  
 
     def config_updated(self, config):
@@ -83,7 +85,6 @@ class RainAudioEffect(AudioReactiveEffect):
                                 np.mean(data.melbank_mids()), 
                                 np.mean(data.melbank_highs())])
 
-
         self.update_drop_frames()
 
         if intensities[0] - self.filtered_intensities[0] > self._config["lows_sensitivity"]:
@@ -95,6 +96,7 @@ class RainAudioEffect(AudioReactiveEffect):
 
         self.filtered_intensities = self.intensity_filter.update(intensities)
 
-
-        self.pixels = self.get_drops()
+        data = self.get_drops()
+        temp = data.reshape((1, -1, 3)).astype(np.dtype('B'))
+        self.pixels = Image.fromarray(temp)
         

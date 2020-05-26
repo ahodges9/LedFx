@@ -1,12 +1,13 @@
 const apiUrl = window.location.protocol + "//" + window.location.host + "/api";
 
 export const GET_AUDIO_INPUTS = "GET_AUDIO_INPUTS"
-export const SET_AUDIO_INPUT = "GET_AUDIO_INPUT"
+export const SET_AUDIO_INPUT = "SET_AUDIO_INPUT"
 
-export function setAudioDevice(index) {
+export function setAudioDevice(index, latency) {
   return dispatch => {
     const data = {
-      index: parseInt(index)
+      index: parseInt(index),
+      device_latency: parseInt(latency)
     };
     fetch(`${apiUrl}/audio/devices`, {
       method: "PUT",

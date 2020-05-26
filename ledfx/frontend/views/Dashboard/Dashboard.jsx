@@ -5,14 +5,13 @@ import withStyles from "@material-ui/core/styles/withStyles";
 
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import Typography from '@material-ui/core/Typography';
 
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
 import Grid from "@material-ui/core/Grid";
 import PixelColorGraph from "frontend/components/PixelColorGraph/PixelColorGraph.jsx";
 import DeviceMiniControl from 'frontend/components/DeviceMiniControl/DeviceMiniControl.jsx';
-import AddPresetCard from "frontend/components/AddPresetCard/AddPresetCard";
+import AddSceneCard from "frontend/components/AddSceneCard/AddSceneCard";
+import MiniScenesCard from "frontend/components/MiniScenesCard/MiniScenesCard";
+
 
 const styles = theme => ({
   root: {
@@ -39,7 +38,7 @@ class DashboardView extends React.Component {
     {
       return (
         <div>
-          <Card>
+          <Card variant="outlined">
               <CardContent>
                 <p>Looks like you have no devices! Go to 'Device Management' to add them</p>
               </CardContent>
@@ -55,8 +54,8 @@ class DashboardView extends React.Component {
           {
             Object.keys(devicesById).map(id => {                      
               return (
-                <Grid item lg={6}>
-                  <Card className={classes.card}>
+                <Grid item lg={6} key={id}>
+                  <Card className={classes.card} variant="outlined">
                     <CardContent>
                       <Grid container direction="row" spacing={1}>
                         <Grid item xs={12}>
@@ -74,9 +73,12 @@ class DashboardView extends React.Component {
           }
         </Grid>
 
-        <Grid container direction="row" spacing={4}>
-          <Grid item xs={12}>
-            <AddPresetCard />
+        <Grid container direction="row" spacing={4} alignItems="stretch">
+          <Grid item xs={6}>
+            <MiniScenesCard />
+          </Grid>
+          <Grid item xs={6}>
+            <AddSceneCard />
           </Grid>
         </Grid>
       </div>

@@ -15,7 +15,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import sidebarStyle from "./style.jsx";
 import viewRoutes from "frontend/routes/views.jsx";
 //import logoAsset from "frontend/assets/img/logo.png";
-import logoAsset from "frontend/assets/img/icon/small_white_alpha.png";
+import logoAsset from "frontend/assets/img/icon/large_white_alpha.png";
 
 import { getSystemConfig } from "frontend/actions";
 
@@ -83,14 +83,14 @@ class Sidebar extends React.Component {
             if (this.isViewActive(prop.path) && prop.sidebarName != "Devices") {
               listItemClass = listItemClass + " " + classes.activeView
             }
-            if (this.isViewActive(prop.path) && prop.sidebarName != "EffectPresets") {
+            if (this.isViewActive(prop.path) && prop.sidebarName != "EffectScenes") {
               listItemClass = listItemClass + " " + classes.activeView
             }
 
             if (prop.sidebarName === "Devices")
             {
               return (
-                <ListItem button className={listItemClass}>
+                <ListItem button className={listItemClass} key={key}>>
                 <ListItemIcon className={classes.itemIcon}>
                   <prop.icon />
                 </ListItemIcon>
@@ -105,10 +105,10 @@ class Sidebar extends React.Component {
               );
             }
 
-            if (prop.sidebarName === "EffectPresets")
+            if (prop.sidebarName === "EffectScenes")
             {
               return (
-                <ListItem button className={listItemClass}>
+                <ListItem button className={listItemClass} key={key}>>
                 <ListItemIcon className={classes.itemIcon}>
                   <prop.icon />
                 </ListItemIcon>

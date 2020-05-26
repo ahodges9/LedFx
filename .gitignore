@@ -18,7 +18,6 @@ env
 # NPM
 node_modules/
 npm-debug.log
-package-lock.json
 
 # Project files
 .ropeproject

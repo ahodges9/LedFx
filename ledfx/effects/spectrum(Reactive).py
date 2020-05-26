@@ -1,8 +1,10 @@
 from ledfx.effects.audio import AudioReactiveEffect
+from ledfx.effects import Effect1D
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 
-class SpectrumAudioEffect(AudioReactiveEffect):
+class SpectrumAudioEffect(AudioReactiveEffect, Effect1D):
 
     NAME = "Spectrum"
     CONFIG_SCHEMA = vol.Schema({})
@@ -35,4 +37,5 @@ class SpectrumAudioEffect(AudioReactiveEffect):
         self._prev_y = y
 
         output = np.array([r,g,b]) * 255
-        self.pixels = output.T
+        output = output.reshape((1, -1, 3)).astype(np.dtype('B'))
+        self.pixels = Image.fromarray(output)

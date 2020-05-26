@@ -1,12 +1,13 @@
 from ledfx.effects.temporal import TemporalEffect
+from ledfx.effects import Effect1D
 from ledfx.effects import fill_rainbow
 import voluptuous as vol
 
-class RainbowEffect(TemporalEffect):
+class RainbowEffect(TemporalEffect, Effect1D):
 
     NAME = "Rainbow"
     CONFIG_SCHEMA = vol.Schema({
-        vol.Optional('frequency', description='Frequency of the effect curve', default = 1.0):  vol.Coerce(float)
+        vol.Optional('frequency', description='Frequency of the effect curve', default = 1.0): vol.All(vol.Coerce(float), vol.Range(min=0.1, max=10)),
     })
 
     _hue = 0.1
