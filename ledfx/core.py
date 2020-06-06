@@ -43,6 +43,9 @@ class LedFxCore(object):
     def dev_enabled(self):
         return self.config['dev_mode'] == True
 
+    def spotify_enabled(self):
+        return self.config['spotify_enabled'] == True
+
     def loop_exception_handler(self, loop, context):
         kwargs = {}
         exception = context.get('exception')
