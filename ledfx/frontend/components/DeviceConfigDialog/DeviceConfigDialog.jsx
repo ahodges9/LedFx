@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
 
@@ -7,18 +6,15 @@ import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogActions from "@material-ui/core/DialogActions";
 import DialogContentText from "@material-ui/core/DialogContentText";
 
 import SchemaFormCollection from "frontend/components/SchemaForm/SchemaFormCollection.jsx";
-import { addDevice } from"frontend/actions";
+import { addDevice, updateDevice } from "frontend/actions";
 
-import fetch from "cross-fetch";
-
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
-    float: "right"
-  }
+    float: "right",
+  },
 });
 
 class DeviceConfigDialog extends React.Component {
@@ -30,13 +26,24 @@ class DeviceConfigDialog extends React.Component {
     this.props.onClose();
   };
 
-  handleSubmit = (type, config) => {
-    this.props.dispatch(addDevice(type, config));
+  handleSubmit = (type, config, deviceId) => {
+    if (deviceId) {
+      this.props.dispatch(updateDevice(deviceId, type, config));
+    } else {
+      this.props.dispatch(addDevice(type, config));
+    }
     this.props.onClose();
   };
 
   render() {
-    const { classes, dispatch, schemas, onClose, ...otherProps } = this.props;
+    const {
+      classes,
+      dispatch,
+      schemas,
+      onClose,
+      initialModel,
+      ...otherProps
+    } = this.props;
     return (
       <Dialog
         onClose={this.handleClose}
@@ -44,23 +51,25 @@ class DeviceConfigDialog extends React.Component {
         aria-labelledby="form-dialog-title"
         {...otherProps}
       >
-        <DialogTitle id="form-dialog-title">Add Device</DialogTitle>
+        <DialogTitle id="form-dialog-title">
+          {!!initialModel ? "Edit Device" : "Add Device"}
+        </DialogTitle>
         <DialogContent className={classes.cardResponsive}>
           <DialogContentText>
-            To add a device to LedFx, please first select the type of device you
-            wish to add then provide the necessary configuration.
+            To configure a device for LedFx, please first select the type of
+            device, then provide the necessary configuration.
           </DialogContentText>
           <SchemaFormCollection
             schemaCollection={schemas.devices}
-            onSubmit={this.handleSubmit}
+            onSubmit={(type, config) => {
+              this.handleSubmit(type, config, initialModel && initialModel.id);
+            }}
             useAdditionalProperties={true}
+            initialModel={!!initialModel ? initialModel.config : undefined}
+            collectionKey={!!initialModel ? initialModel.type : undefined}
           >
-            <Button
-              className={classes.button}
-              type="submit"
-              color="primary"
-            >
-              Add
+            <Button className={classes.button} type="submit" color="primary">
+              Ok
             </Button>
             <Button
               className={classes.button}
@@ -80,7 +89,7 @@ function mapStateToProps(state) {
   const { schemas } = state;
 
   return {
-    schemas
+    schemas,
   };
 }
 

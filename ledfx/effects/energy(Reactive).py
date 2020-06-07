@@ -1,9 +1,11 @@
 from ledfx.effects.audio import AudioReactiveEffect
+from ledfx.effects import Effect1D
 from ledfx.color import COLORS
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 
-class EnergyAudioEffect(AudioReactiveEffect):
+class EnergyAudioEffect(AudioReactiveEffect, Effect1D):
 
     NAME = "Energy"
     CONFIG_SCHEMA = vol.Schema({
@@ -28,7 +30,6 @@ class EnergyAudioEffect(AudioReactiveEffect):
         self.high_colour = np.array(COLORS[self._config['color_high']], dtype=float)
 
     def audio_data_updated(self, data):
-
         # Calculate the low, mids, and high indexes scaling based on the pixel count
         lows_idx = int(np.mean(self.pixel_count * data.melbank_lows()))
         mids_idx = int(np.mean(self.pixel_count * data.melbank_mids()))
@@ -36,7 +37,7 @@ class EnergyAudioEffect(AudioReactiveEffect):
 
         # Build the new energy profile based on the mids, highs and lows setting
         # the colors as red, green, and blue channel respectively
-        p = np.zeros(np.shape(self.pixels))
+        p = np.zeros((1, self.pixel_count, 3))
         if self._config["mixing_mode"] == "additive":
             p[:lows_idx] = self.lows_colour
             p[:mids_idx] += self.mids_colour
@@ -46,5 +47,6 @@ class EnergyAudioEffect(AudioReactiveEffect):
             p[:mids_idx] = self.mids_colour
             p[:highs_idx] = self.high_colour
 
-        # Filter and update the pixel values
-        self.pixels = self._p_filter.update(p)
+        temp = self._p_filter.update(p)
+
+        self.pixels = Image.fromarray(temp.astype(np.dtype('B')))

@@ -119,7 +119,10 @@ class LedFxCore(object):
         self.events.fire_event(LedFxShutdownEvent())
         await asyncio.sleep(0, loop=self.loop)
 
-        await self.http.stop()
+        try:
+            await self.http.stop()
+        except:
+            print('Failed to stop http server')
 
         # Cancel all the remaining task and wait
         tasks = [task for task in asyncio.Task.all_tasks() if task is not

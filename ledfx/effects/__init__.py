@@ -1,6 +1,7 @@
 from ledfx.utils import BaseRegistry, RegistryLoader
 #from ledfx.effects.audio import FREQUENCY_RANGES
 from functools import lru_cache
+from PIL import ImageFilter, Image, ImageOps, ImageEnhance, ImageChops
 import voluptuous as vol
 import numpy as np
 import importlib
@@ -14,76 +15,26 @@ _LOGGER = logging.getLogger(__name__)
 
 def mix_colors(color_1, color_2, ratio):
     if color_2 == []:
-       return (color_1[0] * (1-ratio) + 0,
-            color_1[1] * (1-ratio) + 0,
-            color_1[2] * (1-ratio) + 0)	
+        return (color_1[0] * (1-ratio) + 0,
+                color_1[1] * (1-ratio) + 0,
+                color_1[2] * (1-ratio) + 0)
     else:
         return (color_1[0] * (1-ratio) + color_2[0] * ratio,
-            color_1[1] * (1-ratio) + color_2[1] * ratio,
-            color_1[2] * (1-ratio) + color_2[2] * ratio)
+                color_1[1] * (1-ratio) + color_2[1] * ratio,
+                color_1[2] * (1-ratio) + color_2[2] * ratio)
 
-def fill_solid(pixels, color):
-    pixels[:,] = color
+def hsv2rgb(h,s,v):
+    return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
 
 def fill_rainbow(pixels, initial_hue, delta_hue):
     hue = initial_hue
     sat = 0.95
     val = 1.0
-    for i in range(0,len(pixels)):
-        pixels[i,:] = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(hue, sat, val))
-        hue = hue + delta_hue
+    for y in range(0, pixels.height):
+        for x in range(0, pixels.width):
+            pixels.putpixel((x, y), hsv2rgb(hue, sat, val))
+            hue = hue + delta_hue
     return pixels
-
-def mirror_pixels(pixels):
-    # TODO: Figure out some better logic here. Needs to reduce the signal 
-    # and reflect across the middle. The prior logic was broken for
-    # non-uniform effects.
-    mirror_shape = (np.shape(pixels)[0], 2, np.shape(pixels)[1])
-    return np.append(pixels[::-1], pixels, axis=0).reshape(mirror_shape).mean(axis = 1)
-
-def flip_pixels(pixels):
-    return np.flipud(pixels)
-
-def blur_pixels(pixels, sigma):
-    rgb_array = pixels.T
-    rgb_array[0] = smooth(rgb_array[0], sigma)
-    rgb_array[1] = smooth(rgb_array[1], sigma)
-    rgb_array[2] = smooth(rgb_array[2], sigma)
-    return rgb_array.T
-
-def brightness_pixels(pixels, brightness):
-    pixels *= brightness
-    return pixels
-
-@lru_cache(maxsize=32)
-def _gaussian_kernel1d(sigma, order, radius):
-    if order < 0:
-        raise ValueError('order must be non-negative')
-    p = np.polynomial.Polynomial([0, 0, -0.5 / (sigma * sigma)])
-    x = np.arange(-radius, radius + 1)
-    phi_x = np.exp(p(x), dtype=np.double)
-    phi_x /= phi_x.sum()
-    if order > 0:
-        q = np.polynomial.Polynomial([1])
-        p_deriv = p.deriv()
-        for _ in range(order):
-            # f(x) = q(x) * phi(x) = q(x) * exp(p(x))
-            # f'(x) = (q'(x) + q(x) * p'(x)) * phi(x)
-            q = q.deriv() + q * p_deriv
-        phi_x *= q(x)
-    return phi_x
-
-def smooth(x, sigma):
-    lw = int(4.0 * float(sigma) + 0.5)
-    w = _gaussian_kernel1d(sigma, 0, lw)
-    window_len = len(w)
-
-    s = np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
-    y = np.convolve(w/w.sum(),s,mode='valid')
-
-    if window_len < len(x):
-        return y[(window_len//2):-(window_len//2)]
-    return y[0:len(x)]
 
 @BaseRegistry.no_registration
 class Effect(BaseRegistry):
@@ -91,17 +42,18 @@ class Effect(BaseRegistry):
     Manages an effect
     """
     NAME = ""
-    _pixels = None
+    _image = None
     _dirty = False
     _config = None
     _active = False
+    _dimensions = (0, 0)
 
     # Basic effect properties that can be applied to all effects
     CONFIG_SCHEMA = vol.Schema({
-        vol.Optional('blur', description='Amount to blur the effect', default = 0.0): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=10)),
-        vol.Optional('flip', description='Flip the effect', default = False): bool,
-        vol.Optional('mirror', description='Mirror the effect', default = False): bool,
-        vol.Optional('brightness', description='Brightness of strip', default = 1.0): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
+        vol.Optional('blur', description='Amount to blur the effect', default=0.0): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=10)),
+        vol.Optional('flip', description='Flip the effect', default=False): bool,
+        vol.Optional('mirror', description='Mirror the effect', default=False): bool,
+        vol.Optional('brightness', description='Brightness of strip', default=1.0): vol.All(vol.Coerce(float), vol.Range(min=0.0, max=10.0)),
     })
 
     def __init__(self, ledfx, config):
@@ -113,16 +65,25 @@ class Effect(BaseRegistry):
         if self._active:
             self.deactivate()
 
-    def activate(self, pixel_count):
+    def activate(self, dimensions):
         """Attaches an output channel to the effect"""
-        self._pixels = np.zeros((pixel_count, 3))
+        self._dimensions = dimensions
+        self._image = Image.new("RGB", dimensions)
         self._active = True
+    
+        # Iterate all the base classes and check to see if there is a custom
+        # implementation of config updates. If to notify the base class.
+        valid_classes = list(type(self).__bases__)
+        valid_classes.append(type(self))
+        for base in valid_classes:
+            if base.activated != super(base, base).activated:
+                base.activated(self)
 
         _LOGGER.info("Effect {} activated.".format(self.NAME))
 
     def deactivate(self):
         """Detaches an output channel from the effect"""
-        self._pixels = None
+        self._image = None
         self._active = False
 
         _LOGGER.info("Effect {} deactivated.".format(self.NAME))
@@ -157,46 +118,69 @@ class Effect(BaseRegistry):
         """
         pass
 
+    def activated(self):
+        """
+        Optional event if an effect was activated
+        """
+        pass
+
     @property
     def is_active(self):
         """Return if the effect is currently active"""
         return self._active
 
     @property
-    def pixels(self):
+    def is_2d(self):
+        """Return if the effect is a matrix"""
+        return self._dimensions[1] > 1
+
+    @property
+    def outputimage(self):
+        input = self.image
+
+        # Apply some of the base output filters if necessary
+        if self._config['brightness']:
+            enhancer = ImageEnhance.Brightness(input)
+            input = enhancer.enhance(self._config['brightness'])
+        if self._config['blur'] != 0.0:
+            input = input.filter(ImageFilter.GaussianBlur(
+                radius=self._config['blur']))
+
+        # horizontal flip
+        if self._config['flip']:
+            input = ImageOps.mirror(input)
+
+        # reflection effect
+        if self._config['mirror']:
+            # Scale image to half width
+            hImage = input.resize(
+                (int(self._dimensions[0] / 2), self._dimensions[1]), resample=3)
+
+            input.paste(hImage, (0, 0))
+            input.paste(ImageOps.mirror(hImage),
+                        (int(self._dimensions[0] / 2), 0))
+
+        return input
+
+    @property
+    def image(self):
         """Returns the pixels for the channel"""
         if not self._active:
-            raise Exception('Attempting to access pixels before effect is active')
+            raise Exception(
+                'Attempting to access image before effect is active')
 
-        return np.copy(self._pixels)
+        return self._image
 
-    @pixels.setter
-    def pixels(self, pixels):
+    @image.setter
+    def image(self, input):
         """Sets the pixels for the channel"""
         if not self._active:
-            _LOGGER.warning('Attempting to set pixels before effect is active. Dropping.')
+            _LOGGER.warning(
+                'Attempting to set image before effect is active. Dropping.')
             return
-
-        if isinstance(pixels, tuple):
-            self._pixels = np.copy(pixels)
-        elif isinstance(pixels, np.ndarray):
-
-            # Apply some of the base output filters if necessary
-            if self._config['blur'] != 0.0:
-                pixels = blur_pixels(pixels=pixels, sigma=self._config['blur'])
-            if self._config['flip']:
-                pixels = flip_pixels(pixels)
-            if self._config['mirror']:
-                pixels = mirror_pixels(pixels)
-            if self._config['brightness']:
-                pixels = brightness_pixels(pixels, self._config['brightness'])
-            self._pixels = np.copy(pixels)
-        else:
-            raise TypeError()
-
+        self._image = input
         self._dirty = True
 
-        
         if self._dirty_callback:
             self._dirty_callback()
 
@@ -204,13 +188,50 @@ class Effect(BaseRegistry):
         self._dirty_callback = callback
 
     @property
-    def pixel_count(self):
-        """Returns the number of pixels for the channel"""
-        return len(self.pixels)
-
-    @property
     def name(self):
         return self.NAME
+
+@BaseRegistry.no_registration
+class Effect1D(Effect):
+    """This upgrades 1D effects for use with 2d LED arrays."""
+
+    _pixels = None
+
+    def activate(self, dimensions):
+        super().activate(dimensions)
+        self._pixels = Image.new("RGB", (dimensions[0], 1))
+
+    @property
+    def pixel_count(self):
+        """Returns the number of pixels for the channel"""
+        return self._dimensions[0]
+
+    @property
+    def pixels(self):
+        """Returns the pixels for the channel"""
+        if not self._active:
+            raise Exception(
+                'Attempting to access pixels before effect is active')
+
+        return self._pixels.copy()
+
+    @pixels.setter
+    def pixels(self, pixels):
+        """Transform pixels to 2d matrix"""
+
+        self._pixels = pixels
+
+        # Filter and update the pixel values
+        if self.is_2d:
+            temp = ImageChops.offset(self.image, 0, 1) # scroll down 1 pixel
+
+            # add new values at the top
+            temp.paste(pixels, (0, 0))
+            
+            self.image = temp
+        else:
+            self.image = pixels
+
 
 class Effects(RegistryLoader):
     """Thin wrapper around the effect registry that manages effects"""
@@ -218,5 +239,5 @@ class Effects(RegistryLoader):
     PACKAGE_NAME = 'ledfx.effects'
 
     def __init__(self, ledfx):
-        super().__init__(ledfx = ledfx, cls = Effect, package = self.PACKAGE_NAME)
+        super().__init__(ledfx=ledfx, cls=Effect, package=self.PACKAGE_NAME)
         self._ledfx.audio = None

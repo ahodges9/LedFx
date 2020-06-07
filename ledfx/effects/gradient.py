@@ -1,7 +1,8 @@
 from ledfx.effects.temporal import TemporalEffect
 from ledfx.effects.modulate import ModulateEffect
 from ledfx.color import COLORS, GRADIENTS
-from ledfx.effects import Effect
+from ledfx.effects import Effect, Effect1D
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 import logging
@@ -9,7 +10,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 @Effect.no_registration
-class GradientEffect(Effect):
+class GradientEffect(Effect1D):
     """
     Simple effect base class that supplies gradient functionality. This
     is intended for effect which instead of outputing exact colors output
@@ -92,7 +93,7 @@ class GradientEffect(Effect):
         t = np.zeros(gradient_length)
         ease_chunks = np.array_split(t, n_colors-1)
         color_pairs = np.array([(self.rgb_list.T[i], self.rgb_list.T[i+1]) for i in range(n_colors-1)])
-        gradient = np.hstack(self._color_ease(len(ease_chunks[i]), *color_pairs[i]) for i in range(n_colors-1))
+        gradient = np.hstack(list(self._color_ease(len(ease_chunks[i]), *color_pairs[i]) for i in range(n_colors-1)))
         _LOGGER.info(('Generating new gradient curve for {}'.format(gradient_colors)))
         self._gradient_curve = gradient
 
@@ -160,5 +161,10 @@ class TemporalGradientEffect(TemporalEffect, GradientEffect, ModulateEffect):
         # TODO: Could add some cool effects like twinkle or sin modulation
         # of the gradient.
         # kinda done
-        pixels = self.apply_gradient(1)
-        self.pixels = self.modulate(pixels)
+        temp = self.apply_gradient(1)
+
+        temp = self.modulate(temp)
+        temp = temp.reshape((-1, 1, 3)).astype(np.dtype('B'))
+
+        self.pixels = Image.fromarray(temp)
+

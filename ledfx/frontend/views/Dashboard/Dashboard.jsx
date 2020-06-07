@@ -54,7 +54,7 @@ class DashboardView extends React.Component {
           {
             Object.keys(devicesById).map(id => {                      
               return (
-                <Grid item lg={6}>
+                <Grid item lg={6} key={id}>
                   <Card className={classes.card} variant="outlined">
                     <CardContent>
                       <Grid container direction="row" spacing={1}>

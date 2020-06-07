@@ -12,6 +12,8 @@ class DeviceEndpoint(RestEndpoint):
     ENDPOINT_PATH = "/api/devices/{device_id}"
 
     async def get(self, device_id) -> web.Response:
+        """Get the config of a device"""
+
         device = self._ledfx.devices.get(device_id)
         if device is None:
             response = { 'not found': 404 }
@@ -21,12 +23,19 @@ class DeviceEndpoint(RestEndpoint):
         return web.json_response(data=response, status=200)
 
     async def put(self, device_id, request) -> web.Response:
+        """Update the config of a device"""
         device = self._ledfx.devices.get(device_id)
         if device is None:
             response = { 'not found': 404 }
             return web.json_response(data=response, status=404)
 
         data = await request.json()
+
+        device_type = data.get('type')
+        if device_type is None:
+            response = { 'status' : 'failed', 'reason': 'Required attribute "type" was not provided' }
+            return web.json_response(data=response, status=500)
+
         device_config = data.get('config')
         if device_config is None:
             response = { 'status' : 'failed', 'reason': 'Required attribute "config" was not provided' }
@@ -40,7 +49,7 @@ class DeviceEndpoint(RestEndpoint):
 
         device = self._ledfx.devices.create(
             id = device_id,
-            type = device_config.get('type'),
+            type = device_type,
             config = device_config,
             ledfx = self._ledfx)
 
@@ -49,6 +58,7 @@ class DeviceEndpoint(RestEndpoint):
             if (device['id'] == device_id):
                 device['config'] = device_config
                 break
+
         save_config(
             config = self._ledfx.config, 
             config_dir = self._ledfx.config_dir)

@@ -61,7 +61,7 @@ class ScenesView extends React.Component {
 }
 
 const renderScenes = (scenes) => Object.keys(scenes).map((key) => (
-  <Grid item xs={6}>
+  <Grid item xs={6} key={key}>
     <ScenesCard key={key} scene={includeKeyInObject(key, scenes[key])} />
   </Grid>
   ))
