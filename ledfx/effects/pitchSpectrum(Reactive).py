@@ -2,6 +2,7 @@ from ledfx.effects.audio import AudioReactiveEffect, MIN_MIDI, MAX_MIDI
 from ledfx.effects.gradient import GradientEffect
 from ledfx.effects import mix_colors
 from ledfx.color import COLORS
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 import aubio
@@ -17,9 +18,13 @@ class PitchSpectrumAudioEffect(AudioReactiveEffect, GradientEffect):
         vol.Optional('responsiveness', description='Responsiveness to note changes', default = 0.15):  vol.All(vol.Coerce(float), vol.Range(min=0.0, max=1.0)),
     })
 
+    lastValues = None
+
     def config_updated(self, config):
         self.avg_midi = None
 
+    def activated(self):
+        self.lastValues = np.zeros((self.pixel_count, 1, 3))
 
     def audio_data_updated(self, data):
         y = data.interpolated_melbank(self.pixel_count, filtered = False)
@@ -40,11 +45,13 @@ class PitchSpectrumAudioEffect(AudioReactiveEffect, GradientEffect):
 
         # Mix in the new color based on the filterbank information and fade out
         # the old colors
-        new_pixels = self.pixels
+        new_pixels = self.lastValues
         for index in range(self.pixel_count):
-            new_color = mix_colors(self.pixels[index], note_color, y[index])
+            new_color = mix_colors(self.lastValues[index, 0], note_color, y[index])
             new_color = mix_colors(new_color, COLORS['black'], self._config['fade_rate'])
-            new_pixels[index] = new_color
+            new_pixels[index, 0] = new_color
+        self.lastValues = new_pixels
 
-        # Set the pixels
-        self.pixels = new_pixels
+        temp = new_pixels.reshape((1, -1, 3)).astype(np.dtype('B'))
+        self.pixels = Image.fromarray(temp)
+

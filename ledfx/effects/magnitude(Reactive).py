@@ -1,5 +1,6 @@
 from ledfx.effects.audio import AudioReactiveEffect, FREQUENCY_RANGES
 from ledfx.effects.gradient import GradientEffect
+from PIL import Image
 import voluptuous as vol
 import numpy as np
 
@@ -22,4 +23,8 @@ class MagnitudeAudioEffect(AudioReactiveEffect, GradientEffect):
         magnitude = np.max(data.sample_melbank(list(self._frequency_range)))
         if magnitude > 1.0:
             magnitude = 1.0
-        self.pixels = self.apply_gradient(magnitude)
+
+        temp = self.apply_gradient(magnitude)
+
+        temp = temp.reshape((1, -1, 3)).astype(np.dtype('B'))
+        self.pixels = Image.fromarray(temp)

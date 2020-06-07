@@ -20,7 +20,7 @@ class DeveloperView extends React.Component {
     let graphList = graphString.split("+")
     let graphDom = Object.keys(graphList).map(graphIndex => {
       return (
-        <Grid item xs={12}>
+        <Grid item xs={12} key={graphIndex}>
           <p>{graphList[graphIndex].replace(/^\w/, c => c.toUpperCase())} Graph</p>
           <MelbankGraph key={graphIndex} graphId={graphList[graphIndex]}/>
         </Grid>
@@ -28,7 +28,7 @@ class DeveloperView extends React.Component {
     });
 
     return (
-      <Grid container spacing={24}>
+      <Grid container spacing={3}>
         {graphDom}
       </Grid>
     );

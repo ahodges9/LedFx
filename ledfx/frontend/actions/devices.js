@@ -59,6 +59,25 @@ export function addDevice(type, config) {
   };
 }
 
+export function updateDevice(id, type, config) {
+  return dispatch => {
+    const data = {
+      type: type,
+      config: config
+    };
+    fetch(`${apiUrl}/devices/${id}`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response => response.json())
+      .then(json => dispatch(fetchDeviceList()));
+  };
+}
+
 export function deleteDevice(id) {
     let deleteJson = { delete: true, device: {id: id} }
     return dispatch => {

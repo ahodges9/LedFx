@@ -14,11 +14,13 @@ const config = {
           {
             loader: "babel-loader",
             options: {
-              presets: ["es2015", "react"],
+              presets: ["@babel/preset-env"],
               plugins: [
-                "transform-class-properties",
-                "transform-react-jsx",
-                "transform-object-rest-spread"
+                "@babel/plugin-proposal-class-properties",
+                "@babel/plugin-transform-react-jsx",
+                ["@babel/plugin-transform-spread", {
+                  "loose": true
+                }]
               ]
             }
           }
@@ -51,7 +53,7 @@ const config = {
   },
   resolve: {
     extensions: [".js", ".jsx", ".css"],
-    modules: [path.resolve("./ledfx"), path.resolve("./node_modules")]
+    modules: [path.resolve("./ledfx"), path.resolve("./node_modules"), "node_modules"]
   },
   plugins: [
     new CopyWebpackPlugin([
