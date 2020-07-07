@@ -51,7 +51,7 @@ const MiniScenesCard = ({ scenes, activateScene, getScenes }) => {
             {
               mapIncludeKey(scenes).map(scene => {
                 return (
-                  <Grid item>
+                  <Grid item key={scene.id}>
                     <Button
                       key={scene.id}
                       className={classes.sceneButton}

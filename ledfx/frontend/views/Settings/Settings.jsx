@@ -14,6 +14,8 @@ import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
 
 import { getAudioDevices, setAudioDevice } from 'frontend/actions';
+import EnableSpotify from "./EnableSpotify";
+
 
 const SettingsView = ({ getAudioDevices, setAudioDevice, settings }) => {
   
@@ -26,6 +28,7 @@ const SettingsView = ({ getAudioDevices, setAudioDevice, settings }) => {
   return (
     <div>
       {audioDevices && (<AudioCard audioDevices={audioDevices} setAudioDevice={setAudioDevice} />)}
+      <EnableSpotify />
     </div>
     );
 }

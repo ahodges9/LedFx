@@ -90,7 +90,7 @@ class Sidebar extends React.Component {
             if (prop.sidebarName === "Devices")
             {
               return (
-                <ListItem button className={listItemClass}>
+                <ListItem button className={listItemClass} key={key}>>
                 <ListItemIcon className={classes.itemIcon}>
                   <prop.icon />
                 </ListItemIcon>
@@ -108,7 +108,7 @@ class Sidebar extends React.Component {
             if (prop.sidebarName === "EffectScenes")
             {
               return (
-                <ListItem button className={listItemClass}>
+                <ListItem button className={listItemClass} key={key}>>
                 <ListItemIcon className={classes.itemIcon}>
                   <prop.icon />
                 </ListItemIcon>

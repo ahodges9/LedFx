@@ -43,6 +43,9 @@ class LedFxCore(object):
     def dev_enabled(self):
         return self.config['dev_mode'] == True
 
+    def spotify_enabled(self):
+        return self.config['spotify_enabled'] == True
+
     def loop_exception_handler(self, loop, context):
         kwargs = {}
         exception = context.get('exception')
@@ -116,7 +119,10 @@ class LedFxCore(object):
         self.events.fire_event(LedFxShutdownEvent())
         await asyncio.sleep(0, loop=self.loop)
 
-        await self.http.stop()
+        try:
+            await self.http.stop()
+        except:
+            print('Failed to stop http server')
 
         # Cancel all the remaining task and wait
         tasks = [task for task in asyncio.Task.all_tasks() if task is not
