@@ -1,7 +1,5 @@
 from ledfx.effects.temporal import TemporalEffect
 from ledfx.effects.gradient import GradientEffect
-#from ledfx.color import COLORS, GRADIENTS
-#from ledfx.effects import Effect
 import voluptuous as vol
 import numpy as np
 import logging
