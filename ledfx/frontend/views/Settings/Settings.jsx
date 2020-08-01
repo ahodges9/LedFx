@@ -12,6 +12,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
 import { getAudioDevices, setAudioDevice } from 'frontend/actions';
+import { Portal } from "@material-ui/core";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -21,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SettingsView = ({ getAudioDevices, setAudioDevice, settings }) => {
+const SettingsView = ({ getAudioDevices, setAudioDevice, settings, testOutputs}) => {
   const classes = useStyles();
   
   useEffect(() => {
@@ -29,15 +30,17 @@ const SettingsView = ({ getAudioDevices, setAudioDevice, settings }) => {
   }, [])
 
   const { audioDevices } = settings
+  const { midiDevices } = settings
   
   return (
     <div className={classes.root}>
       {audioDevices && (<AudioCard audioDevices={audioDevices} setAudioDevice={setAudioDevice} />)}
+      {midiDevices && (<MidiCard midiDevices={testOutputs} />)}
     </div>
     );
 }
 
-const AudioCard = ({ audioDevices, setAudioDevice }) => {
+const AudioCard = ({ audioDevices, setAudioDevice}) => {
   const activeDeviceIndex = audioDevices['active_device_index']
 
   const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex)
@@ -49,8 +52,8 @@ const AudioCard = ({ audioDevices, setAudioDevice }) => {
 
   return (<Card>
             <CardContent>
-              <h3>Audio</h3>
-              <p>Current device: {audioDevices.devices[activeDeviceIndex]}</p>
+              <h3>Audio1</h3>
+              <p>Current Audio device: {audioDevices.devices[activeDeviceIndex]}</p>
               <FormControl>
                 <Select
                   id="audio-input-select"
@@ -65,12 +68,41 @@ const AudioCard = ({ audioDevices, setAudioDevice }) => {
       )
 }
 
+const MidiCard = ({ midiDevices, testOutputs }) => {
+  const activeDeviceIndex1 = audioDevices['active_device_index']
+
+  const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex)
+
+  const handleMidiSelected = (index1) => {
+  testOutputs(index1)
+  }
+
+  return (<Card>
+            <CardContent>
+              <h3>Midi</h3>
+              <p>Current Midi device: {audioDevices.devices[activeDeviceIndex]}</p>
+              <FormControl>
+                <Select
+                  id="midi-input-select"
+                  value={selectedIndex}
+                  onChange={(e) => handleAudioSelected(e.target.value)}
+                >
+                {renderAudioInputSelect(audioDevices.devices)}
+                </Select>
+            </FormControl>
+            </CardContent>
+          </Card>
+      )
+}
+
+
 const renderAudioInputSelect = (audioInputs) => {
   return Object.keys(audioInputs).map((key) => (<MenuItem
     key={key}
     value={key}
     >{audioInputs[key]}</MenuItem>))
 }
+
 
 const mapStateToProps = state => ({ 
   settings: state.settings 
