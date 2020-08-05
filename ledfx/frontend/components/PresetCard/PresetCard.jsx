@@ -11,6 +11,7 @@ import red from '@material-ui/core/colors/red';
 import PresetConfigTable from "frontend/components/PresetCard/PresetConfigTable";
 
 import { activatePreset, deletePreset } from 'frontend/actions';
+import { onMidiIn } from '/Users/vladlenkaveev/Documents/ledfx_dev_branch/ledfx/frontend/views/Settings/midi.js'
 
 const styles = theme => ({ 
   deleteButton: {
@@ -35,7 +36,6 @@ const styles = theme => ({
 });
 
 class PresetCard extends React.Component {
-
   render() {
     const { classes, preset, activatePreset, deletePreset } = this.props;
 
@@ -45,17 +45,27 @@ class PresetCard extends React.Component {
           <h3>{preset.name}</h3>
           { preset.devices && <PresetConfigTable devices ={ preset.devices }/> }
         </CardContent>
-        <CardActions className={classes.submitControls}>
-            <Button
+        <CardActions className={classes.submitControls} >
+            <Button 
               className={classes.button}
               color="primary"
               size="small"
               aria-label="Activate"
               variant = "contained"
               onClick={() => activatePreset(preset.id)}
-            >
+            > 
               Activate
             </Button>
+            {/* <Button id="midibutton"
+              className={classes.button}
+              color="primary"
+              size="small"
+              aria-label="Activate"
+              variant = "contained"
+              onClick={() => activatePreset('rainbow-2')}
+            > 
+              Midi
+            </Button> */}
             <Button
               className={classes.deleteButton}
               color="red"

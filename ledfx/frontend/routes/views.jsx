@@ -13,6 +13,7 @@ import PresetsView from "frontend/views/Presets/Presets.jsx";
 import DeviceView from "frontend/views/Device/Device.jsx";
 import SettingsView from "frontend/views/Settings/Settings.jsx";
 import DeveloperView from "frontend/views/Developer/Developer.jsx";
+import MidiView from "frontend/views/Midi/Midi.jsx"
 
 const viewRoutes = [
   {
@@ -35,6 +36,13 @@ const viewRoutes = [
     navbarName: "Presets Management",
     icon: SaveAltIcon,
     component: PresetsView,
+  },
+  {
+    path: "/midi",
+    sidebarName: "Midi Control",
+    navbarName: "Midi Control",
+    icon: SaveAltIcon,
+    component: MidiView,
   },
   {
     path: "/devices",

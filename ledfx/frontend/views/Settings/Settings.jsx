@@ -11,8 +11,9 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
-import { getAudioDevices, setAudioDevice } from 'frontend/actions';
+import { getAudioDevices, setAudioDevice} from 'frontend/actions';
 import { Portal } from "@material-ui/core";
+import { midiOutput } from '/Users/vladlenkaveev/Documents/ledfx_dev_branch/ledfx/frontend/views/Settings/midi.js'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,7 +23,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SettingsView = ({ getAudioDevices, setAudioDevice, settings, testOutputs}) => {
+const SettingsView = ({ getAudioDevices, setAudioDevice, settings}) => {
   const classes = useStyles();
   
   useEffect(() => {
@@ -30,19 +31,16 @@ const SettingsView = ({ getAudioDevices, setAudioDevice, settings, testOutputs})
   }, [])
 
   const { audioDevices } = settings
-  const { midiDevices } = settings
   
   return (
     <div className={classes.root}>
       {audioDevices && (<AudioCard audioDevices={audioDevices} setAudioDevice={setAudioDevice} />)}
-      {midiDevices && (<MidiCard midiDevices={testOutputs} />)}
     </div>
     );
 }
 
 const AudioCard = ({ audioDevices, setAudioDevice}) => {
   const activeDeviceIndex = audioDevices['active_device_index']
-
   const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex)
 
   const handleAudioSelected = (index) => {
@@ -52,7 +50,7 @@ const AudioCard = ({ audioDevices, setAudioDevice}) => {
 
   return (<Card>
             <CardContent>
-              <h3>Audio1</h3>
+              <h3>Audio</h3>
               <p>Current Audio device: {audioDevices.devices[activeDeviceIndex]}</p>
               <FormControl>
                 <Select
@@ -63,36 +61,19 @@ const AudioCard = ({ audioDevices, setAudioDevice}) => {
                 {renderAudioInputSelect(audioDevices.devices)}
                 </Select>
             </FormControl>
-            </CardContent>
-          </Card>
-      )
-}
-
-const MidiCard = ({ midiDevices, testOutputs }) => {
-  const activeDeviceIndex1 = audioDevices['active_device_index']
-
-  const [selectedIndex, setSelectedIndex] = useState(activeDeviceIndex)
-
-  const handleMidiSelected = (index1) => {
-  testOutputs(index1)
-  }
-
-  return (<Card>
-            <CardContent>
-              <h3>Midi</h3>
-              <p>Current Midi device: {audioDevices.devices[activeDeviceIndex]}</p>
+            <h3>Midi</h3>
+            <p>Current Midi device: </p>
               <FormControl>
-                <Select
+              <Select
                   id="midi-input-select"
-                  value={selectedIndex}
-                  onChange={(e) => handleAudioSelected(e.target.value)}
-                >
-                {renderAudioInputSelect(audioDevices.devices)}
-                </Select>
-            </FormControl>
+                  value={1}
+              >
+            <MenuItem value={1}><div id="port"></div></MenuItem>
+          </Select>
+              </FormControl>
             </CardContent>
           </Card>
-      )
+      );
 }
 
 
@@ -102,7 +83,6 @@ const renderAudioInputSelect = (audioInputs) => {
     value={key}
     >{audioInputs[key]}</MenuItem>))
 }
-
 
 const mapStateToProps = state => ({ 
   settings: state.settings 
