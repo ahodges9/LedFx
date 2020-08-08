@@ -57,6 +57,7 @@
     "@material-ui/icons": "^4.5.1",
     "core-js": "^3.4.1",
     "glob": "^7.1.6",
+    "react-bootstrap-range-slider": "^1.1.2",
     "spotify-web-api-node": "^4.0.0",
     "web-midi-api": "^2.0.8"
   }

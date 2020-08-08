@@ -11,7 +11,6 @@ import red from '@material-ui/core/colors/red';
 import PresetConfigTable from "frontend/components/PresetCard/PresetConfigTable";
 
 import { activatePreset, deletePreset } from 'frontend/actions';
-import { onMidiIn } from '/Users/vladlenkaveev/Documents/ledfx_dev_branch/ledfx/frontend/views/Settings/midi.js'
 
 const styles = theme => ({ 
   deleteButton: {

@@ -13,7 +13,6 @@ import Select from '@material-ui/core/Select';
 
 import { getAudioDevices, setAudioDevice} from 'frontend/actions';
 import { Portal } from "@material-ui/core";
-import { midiOutput } from '/Users/vladlenkaveev/Documents/ledfx_dev_branch/ledfx/frontend/views/Settings/midi.js'
 
 const useStyles = makeStyles(theme => ({
   root: {
