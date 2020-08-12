@@ -60,16 +60,6 @@ const AudioCard = ({ audioDevices, setAudioDevice}) => {
                 {renderAudioInputSelect(audioDevices.devices)}
                 </Select>
             </FormControl>
-            <h3>Midi</h3>
-            <p>Current Midi device: </p>
-              <FormControl>
-              <Select
-                  id="midi-input-select"
-                  value={1}
-              >
-            <MenuItem value={1}><div id="port"></div></MenuItem>
-          </Select>
-              </FormControl>
             </CardContent>
           </Card>
       );

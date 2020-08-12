@@ -38,13 +38,6 @@ const viewRoutes = [
     component: PresetsView,
   },
   {
-    path: "/midi",
-    sidebarName: "Midi Control",
-    navbarName: "Midi Control",
-    icon: SaveAltIcon,
-    component: MidiView,
-  },
-  {
     path: "/devices",
     sidebarName: "Device Management",
     navbarName: "Device Management",
