@@ -53,8 +53,6 @@ class MidiControl extends React.Component {
     startMidi();
     return (
       <div>
-        <Card>
-          <CardContent>
             <Typography variant="h5" color="inherit">
               Midi Control
             </Typography>
@@ -113,8 +111,6 @@ class MidiControl extends React.Component {
                 max={1}
               ></Slider>
             </CardActions>
-          </CardContent>
-        </Card>
       </div>
     );
   }

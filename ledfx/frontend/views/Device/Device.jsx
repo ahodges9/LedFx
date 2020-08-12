@@ -9,6 +9,7 @@ import { callApi, getDevice, getDeviceEffects} from "frontend/utils/api";
 import { connect } from "react-redux";
 import EffectControl from "frontend/components/EffectControl/EffectControl.jsx";
 import PixelColorGraph from "frontend/components/PixelColorGraph/PixelColorGraph.jsx";
+import MidiControl from "frontend/components/MidiControl/MidiControl.jsx";
 
 class DeviceView extends React.Component {
   constructor() {
@@ -72,6 +73,9 @@ class DeviceView extends React.Component {
             <Card>
               <CardContent>
                 <EffectControl device={device} effect={effect}/>
+              </CardContent>
+              <CardContent>
+                <MidiControl />
               </CardContent>
             </Card>
           </Grid>
