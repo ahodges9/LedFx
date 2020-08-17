@@ -8,7 +8,7 @@ from pathlib import Path
 import voluptuous as vol
 from concurrent.futures import ThreadPoolExecutor
 from ledfx.utils import async_fire_and_forget
-from ledfx.http import HttpServer
+from ledfx.http1 import HttpServer
 from ledfx.devices import Devices
 from ledfx.effects import Effects
 from ledfx.config import load_config, save_config, load_default_presets
@@ -35,9 +35,7 @@ class LedFxCore(object):
 
         self.events = Events(self)
         self.http = HttpServer(
-            ledfx=self,
-            host=self.config.get('host', None),
-            port=self.config.get('port', None))
+            ledfx=self, host=self.config['host'], port=self.config['port'])
         self.exit_code = None
 
     def dev_enabled(self):

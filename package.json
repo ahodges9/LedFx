@@ -31,7 +31,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "chart.js": "^2.8.0",
-    "copy-webpack-plugin": "^4.6.0",
+    "copy-webpack-plugin": "^5.1.1",
     "cross-fetch": "^2.2.3",
     "css-loader": "^1.0.1",
     "file-loader": "^1.1.11",
@@ -43,7 +43,7 @@
     "react-event-listener": "^0.6.6",
     "react-redux": "^5.1.2",
     "react-router-dom": "^4.3.1",
-    "react-schema-form": "^0.6.15",
+    "react-schema-form": "^0.8.8",
     "recompose": "^0.30.0",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
@@ -58,6 +58,8 @@
     "@material-ui/lab": "^4.0.0-alpha.42",
     "core-js": "^3.4.1",
     "glob": "^7.1.6",
-    "spotify-web-api-node": "^4.0.0"
+    "react-bootstrap-range-slider": "^1.1.2",
+    "spotify-web-api-node": "^4.0.0",
+    "web-midi-api": "^2.0.8"
   }
 }

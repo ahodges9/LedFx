@@ -11,9 +11,9 @@ CONFIG_FILE_NAME = 'config.yaml'
 DEFAULT_PRESETS_FILE_NAME = 'default_presets.yaml'
 
 CORE_CONFIG_SCHEMA = vol.Schema({
-    vol.Optional('host'): str,
+    vol.Optional('host', default = '127.0.0.1'): str,
     vol.Optional('port', default = 8888): int,
-    vol.Optional('dev_mode', default = False): bool,
+    vol.Optional('dev_mode', default = True): bool,
     vol.Optional('max_workers', default = 10): int,
     vol.Optional('devices', default = []): list,
     vol.Optional('default_presets', default = {}): dict,
