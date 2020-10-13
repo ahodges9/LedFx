@@ -7,12 +7,13 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt';
 import BuildIcon from '@material-ui/icons/Build';
 
 // Components and Views
-import DashboardView from "../views/Dashboard";
-import DevicesView from "../views/Devices";
-import ScenesView from "../views/Scenes";
-import DeviceView from "../views/Device";
-import SettingsView from "../views/Settings";
-import DeveloperView from "../views/Developer";
+import DashboardView from "frontend/views/Dashboard/Dashboard.jsx";
+import DevicesView from "frontend/views/Devices/Devices.jsx";
+import ScenesView from "frontend/views/Scenes/Scenes.jsx";
+import DeviceView from "frontend/views/Device/Device.jsx";
+import SettingsView from "frontend/views/Settings/Settings.jsx";
+import DeveloperView from "frontend/views/Developer/Developer.jsx";
+import MidiView from "frontend/views/Midi/Midi.jsx"
 
 const viewRoutes = [
   {
@@ -23,7 +24,7 @@ const viewRoutes = [
     component: DashboardView
   },
   {
-    path: "/devices/:deviceId",
+    path: "/devices/:device_id",
     navbarName: "Devices",
     sidebarName: "Devices",
     icon: List,
