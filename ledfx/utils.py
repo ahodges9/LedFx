@@ -31,8 +31,8 @@ def install_package(package):
 
 def import_or_install(package):
     try:
-        print("imported package")
         return importlib.import_module(package)
+        print("imported package")
     except ImportError:
         install_package(package)
         try:
@@ -113,7 +113,7 @@ class BaseRegistry(ABC):
     list of automatically registered base classes and assembles schema
     information
 
-    The prevent registration for classes that are intended to serve as 
+    The prevent registration for classes that are intended to serve as
     base classes (i.e. GradientEffect) add the following declarator:
         @Effect.no_registration
     """
@@ -187,10 +187,11 @@ class RegistryLoader(object):
 
         self._ledfx = ledfx
         self.import_registry(package)
-     
+
         # If running in developer mode autoreload the registry when any file
         # within the package changes.
-        if ledfx.dev_enabled() and import_or_install("watchdog"):
+        # Check ledfx is not running as a single exe built using pyinstaller (sys frozen flag).
+        if ledfx.dev_enabled() and import_or_install("watchdog") and not getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 
             watchdog_events = import_or_install("watchdog.events")
             watchdog_observers = import_or_install("watchdog.observers")
@@ -257,7 +258,7 @@ class RegistryLoader(object):
             path = sys.modules[name].__file__
             if path.endswith('.pyc') or path.endswith('.pyo'):
                 path = path[:-1]
-            
+
             try:
                 module = imp.load_source(name, path)
                 sys.modules[name] = module

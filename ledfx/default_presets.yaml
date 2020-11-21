@@ -798,7 +798,7 @@ strobe(Reactive):
       frequency: "1/32 (\u2299\u2583\u2299 )"
       mirror: false
     name: Painful
-Wavelength:
+wavelength(Reactive):
   classic:
     config:
       blur: 3.0

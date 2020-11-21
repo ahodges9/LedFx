@@ -1,6 +1,7 @@
 from ledfx.effects.temporal import TemporalEffect
 from ledfx.effects.gradient import GradientEffect
-from PIL import Image
+#from ledfx.color import COLORS, GRADIENTS
+#from ledfx.effects import Effect
 import voluptuous as vol
 import numpy as np
 import logging
@@ -31,5 +32,6 @@ class FadeEffect(TemporalEffect, GradientEffect):
             i = self.idx
         else:
             i = 1-self.idx        
+
         color = self.get_gradient_color(i)
-        self.pixels = Image.new("RGB", (self.pixel_count, 1), color=tuple(color.astype('B')))
+        self.pixels = np.tile(color, (self.pixel_count, 1))

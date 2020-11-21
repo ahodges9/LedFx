@@ -1,6 +1,5 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.effects.gradient import GradientEffect
-from PIL import Image
 import voluptuous as vol
 import numpy as np
 
@@ -33,5 +32,4 @@ class BlocksAudioEffect(AudioReactiveEffect, GradientEffect):
             color = self.get_gradient_color(i/self._config["block_count"])[:, np.newaxis]
             out_split[i] = np.multiply(out_split[i], (out_split[i].max() * color))
 
-        temp = np.hstack(out_split).reshape((1, -1, 3)).astype(np.dtype('B'))
-        self.pixels = Image.fromarray(temp)
+        self.pixels = np.hstack(out_split).T

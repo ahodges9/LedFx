@@ -1,10 +1,10 @@
 from ledfx.effects.audio import AudioReactiveEffect
 from ledfx.color import COLORS
-from PIL import Image
 import voluptuous as vol
 import numpy as np
 
 class Strobe(AudioReactiveEffect):
+
     NAME = "Strobe"
     CONFIG_SCHEMA = vol.Schema({
         vol.Optional('color', description='Strobe colour', default = "white"): vol.In(list(COLORS.keys())),
@@ -23,4 +23,4 @@ class Strobe(AudioReactiveEffect):
     def audio_data_updated(self, data):
         beat_oscillator, beat_now = data.oscillator()
         brightness = (-beat_oscillator % (2 / self.f)) * (self.f / 2)
-        self.image = Image.new("RGB", self._dimensions, color=tuple((self.color*brightness).astype('B')))
+        self.pixels = np.tile(self.color*brightness, (self.pixel_count, 1))

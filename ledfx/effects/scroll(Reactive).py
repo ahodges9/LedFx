@@ -1,12 +1,10 @@
 from ledfx.effects.audio import AudioReactiveEffect, FREQUENCY_RANGES_SIMPLE
-from ledfx.effects import Effect1D
 from ledfx.color import COLORS
-from PIL import Image
 import voluptuous as vol
 import numpy as np
 
 
-class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
+class ScrollAudioEffect(AudioReactiveEffect):
 
     NAME = "Scroll"
 
@@ -21,14 +19,15 @@ class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
         vol.Optional('color_high', description='Color of high sounds', default = "blue"): vol.In(list(COLORS.keys())),
     })
 
-    lastValues = None
+    def config_updated(self, config):
 
-    def activated(self):
         # TODO: Determine how buffers based on the pixels should be
         # allocated. Technically there is no guarantee that the effect
         # is bound to a device while the config gets updated. Might need
         # to move to a model where effects are created for a device and
         # must be destroyed and recreated to be moved to another device.
+        self.output = None
+
         self.lows_colour = np.array(COLORS[self._config['color_lows']], dtype=float)
         self.mids_colour = np.array(COLORS[self._config['color_mids']], dtype=float)
         self.high_colour = np.array(COLORS[self._config['color_high']], dtype=float)
@@ -37,9 +36,11 @@ class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
         self.mids_cutoff = self._config['threshold'] / 4
         self.high_cutoff = self._config['threshold'] / 7
 
-        self.lastValues = np.zeros((self.pixel_count, 3))
-
     def audio_data_updated(self, data):
+
+        if self.output is None:
+            self.output = self.pixels
+
         # Divide the melbank into lows, mids and highs
         lows_max = np.clip(np.max(data.melbank_lows() ** 2), 0, 1)
         mids_max = np.clip(np.max(data.melbank_mids() ** 2), 0, 1)
@@ -59,17 +60,17 @@ class ScrollAudioEffect(AudioReactiveEffect, Effect1D):
 
         # Roll the effect and apply the decay
         speed = self.config['speed']
-        self.lastValues[speed:,:] = self.lastValues[:-speed,:]
-        self.lastValues = (self.lastValues * self.config['decay'])
+        self.output[speed:,:] = self.output[:-speed,:]
+        self.output = (self.output * self.config['decay'])
 
         # Add in the new color from the signal maxes
         #self.output[:speed, 0] = lows_val[0] + mids_val[0] + high_val[0]
         #self.output[:speed, 1] = lows_val[1] + mids_val[1] + high_val[1]
         #self.output[:speed, 2] = lows_val[2] + mids_val[2] + high_val[2]
 
-        self.lastValues[:speed] = self.lows_colour * lows_max
-        self.lastValues[:speed] += self.mids_colour * mids_max
-        self.lastValues[:speed] += self.high_colour * highs_max
+        self.output[:speed] = self.lows_colour * lows_max
+        self.output[:speed] += self.mids_colour * mids_max
+        self.output[:speed] += self.high_colour * highs_max
 
         # Set the pixels
-        self.pixels = Image.fromarray(self.lastValues.reshape((1, -1, 3)).astype(np.dtype('B')))
+        self.pixels = self.output

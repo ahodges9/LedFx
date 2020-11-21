@@ -43,8 +43,8 @@ class TemporalEffect(Effect):
         """
         pass
 
-    def activate(self, dimensions):
-        super().activate(dimensions)
+    def activate(self, pixel_count):
+        super().activate(pixel_count)
 
         self._thread_active = True
         self._thread = Thread(target = self.thread_function)
