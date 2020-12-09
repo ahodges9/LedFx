@@ -13,7 +13,7 @@ import os
 _LOGGER = logging.getLogger(__name__)
 
 def mix_colors(color_1, color_2, ratio):
-    if color_2 == []:
+    if np.array_equal(color_2,[]):
        return (color_1[0] * (1-ratio) + 0,
             color_1[1] * (1-ratio) + 0,
             color_1[2] * (1-ratio) + 0)	
@@ -52,7 +52,7 @@ def blur_pixels(pixels, sigma):
     return rgb_array.T
 
 def brightness_pixels(pixels, brightness):
-    pixels *= brightness
+    pixels = np.multiply(pixels, brightness, out=pixels, casting="unsafe")
     return pixels
 
 @lru_cache(maxsize=32)

@@ -15,13 +15,32 @@ class QLCEndpoint(RestEndpoint):
 
     async def get(self) -> web.Response:
         """Get status of QLC webhook"""
-        response = {
-            'status' : 'success' ,
-            # 'qlc_enabled' : # is qlc integration enabled?,
-            # 'qlc_ip' : # ip address for qlc?
-            # 'qlc_webhook_status' : # is the webhook connected?,
-        }
-        return web.json_response(data=response, status=200)
+        response = self._ledfx.config.get('qlc')
+        # response = {
+        #     'status' : 'success' ,
+        #     'qlc_enabled' : # is qlc integration enabled?,
+        #     'qlc_ip' : # ip address for qlc?
+        #     'qlc_webhook_status' : # is the webhook connected?,
+        # }
+        return web.Response(text=json.dumps(response), status=200)
+
+    async def put(self, request) -> web.Response:
+        qlc = self._ledfx.config.get('qlc')
+        if qlc is None:
+            response = { 'not found': 404 }
+            return web.Response(text=json.dumps(response), status=404)
+
+        data = await request.json()
+        enable_qlc = data.get('qlc_enabled')
+        if enable_qlc is None:
+            response = { 'status' : 'failed', 'reason': 'Required attribute "enable" was not provided' }
+            return web.Response(text=json.dumps(response), status=500)
+
+
+        # Update and save the configuration
+        self._ledfx.config['qlc'] = enable_qlc
+
+##### From here is copy of scenes api
 
     async def delete(self, request) -> web.Response:
         """Disable QLC webhook"""
@@ -116,6 +135,6 @@ class QLCEndpoint(RestEndpoint):
         save_config(
             config = self._ledfx.config, 
             config_dir = self._ledfx.config_dir)
-
-        response = { 'status' : 'success', 'scene': {'id': scene_id, 'config': scene_config }}
-        return web.json_response(data=response, status=200)
+        
+        response = { 'status' : 'success', 'qlc_enabled' : enable_qlc}
+        return web.Response(text=json.dumps(response), status=200)

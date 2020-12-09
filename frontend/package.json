@@ -15,6 +15,7 @@
         "chart.js": "^2.9.3",
         "connected-react-router": "^6.8.0",
         "core-js": "^3.6.5",
+        "debounce": "^1.2.0",
         "glob": "^7.1.6",
         "history": "^4.10.1",
         "react": "^16.13.1",
@@ -22,9 +23,9 @@
         "react-dom": "^16.13.1",
         "react-event-listener": "^0.6.6",
         "react-redux": "^7.2.0",
+        "react-router": "^4.3.1",
         "react-router-dom": "^5.2.0",
         "react-schema-form": "^0.8.7",
-        "recompose": "^0.30.0",
         "redux": "^4.0.5",
         "redux-actions": "^2.6.5",
         "redux-thunk": "^2.3.0",
@@ -34,10 +35,13 @@
     },
     "scripts": {
         "start": "react-scripts start",
+        "build_win": "react-scripts build && yarn copyFilesUp_win",
         "build": "react-scripts build && yarn copyFilesUp",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "copyFilesUp": "rimraf ../ledfx_frontend && cp -r ./build/ ../ledfx_frontend"
+        "clean": "rimraf ./node_modules",
+        "copyFilesUp": "rimraf ../ledfx_frontend && cp -r ./build/ ../ledfx_frontend",
+        "copyFilesUp_win": "rmdir /s /q ..\\ledfx_frontend 2>nul & ren build ledfx_frontend && move ledfx_frontend .."
     },
     "eslintConfig": {
         "extends": "react-app"
@@ -55,6 +59,7 @@
         ]
     },
     "devDependencies": {
+        "@testing-library/dom": ">=5",
         "@testing-library/jest-dom": "^4.2.4",
         "@testing-library/react": "^9.3.2",
         "@testing-library/user-event": "^7.1.2",

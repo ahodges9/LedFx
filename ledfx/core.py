@@ -18,10 +18,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class LedFxCore(object):
-    def __init__(self, config_dir):
+    def __init__(self, config_dir, host=None, port=None):
         self.config_dir = config_dir
         self.config = load_config(config_dir)
         self.config["default_presets"] = load_default_presets()
+        host = host if host else self.config['host']
+        port = port if port else self.config['port']
 
         if sys.platform == 'win32':
             self.loop = asyncio.ProactorEventLoop()
@@ -35,7 +37,7 @@ class LedFxCore(object):
 
         self.events = Events(self)
         self.http = HttpServer(
-            ledfx=self, host=self.config['host'], port=self.config['port'])
+            ledfx=self, host=host, port=port)
         self.exit_code = None
 
     def dev_enabled(self):
@@ -95,6 +97,13 @@ class LedFxCore(object):
         # TODO: Deferr
         self.devices.create_from_config(self.config['devices'])
 
+        # TODO: This step blocks for 1.5 secs while searching for devices. 
+        # It needs a callback in 3-5 seconds to kill the zeroconf browser, which is
+        # implemented using a blocking time.sleep 
+        if not self.devices.values():
+            _LOGGER.info("No devices saved in config.")
+            async_fire_and_forget(self.devices.find_wled_devices(), self.loop)
+
         if open_ui:
             import webbrowser
             webbrowser.open(self.http.base_url)
@@ -117,8 +126,10 @@ class LedFxCore(object):
         await self.http.stop()
 
         # Cancel all the remaining task and wait
-        tasks = [task for task in asyncio.Task.all_tasks() if task is not
-             asyncio.tasks.Task.current_task()] 
+
+        
+        tasks = [task for task in asyncio.all_tasks() if task is not
+             asyncio.current_task()] 
         list(map(lambda task: task.cancel(), tasks))
         results = await asyncio.gather(*tasks, return_exceptions=True)
 

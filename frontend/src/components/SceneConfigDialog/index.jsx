@@ -35,12 +35,11 @@ class SceneConfigDialog extends React.Component {
                 aria-labelledby="form-dialog-title"
                 {...otherProps}
             >
-                <DialogTitle id="form-dialog-title">Add Preset</DialogTitle>
+                <DialogTitle id="form-dialog-title">Add QLC+ Widget</DialogTitle>
                 <DialogContent className={classes.cardResponsive}>
                     <DialogContentText>
-                        To add a scene to LedFx, please first configure the effects you wish to
-                        save, select the type of preset you wish, and then provide the necessary
-                        configuration.
+                        Once you have created your widgets in QLC+ API, and QLC+ currently in live mode,
+                        you can select from your QLC+ Widget list. NOTES: Backend QLC API get WidgetsList.
                     </DialogContentText>
                     <SchemaFormCollection
                         schemaCollection={schemas.devices}
@@ -48,6 +47,13 @@ class SceneConfigDialog extends React.Component {
                         useAdditionalProperties={true}
                         submitText="Add"
                         onCancel={this.handleClose}
+                        //Once selected a Widget option, Value text will say:
+                        
+                        //The value to set depends on the widget type itself. 
+                        //Buttons will only support values 255 (= button is pressed) 
+                        //and 0 (= button is released), 
+                        //Audio triggers will support values 0 (= off) and 255 (= on)
+                        // and Sliders will accept all the values in the 0-255 range.
                     />
                 </DialogContent>
             </Dialog>

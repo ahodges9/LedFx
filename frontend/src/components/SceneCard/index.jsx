@@ -58,6 +58,17 @@ export default function SceneCard({ scene, activateScene, deleteScene }) {
                 </Button>
                 <Button
                     className={classes.button}
+                    aria-label="AddQLCWidget"
+                    color="primary"
+                    variant="contained"
+                    onClick={handleActivate}
+                    endIcon={<CheckCircleIcon />}
+                    //This will be changed to open SceneConfigDialog
+                >
+                    Add QLC Widget
+                </Button>
+                <Button
+                    className={classes.button}
                     aria-label="Activate"
                     color="primary"
                     variant="contained"
