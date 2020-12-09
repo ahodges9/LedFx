@@ -21,14 +21,38 @@ _LOGGER = logging.getLogger(__name__)
 @BaseRegistry.no_registration
 class Device(BaseRegistry):
 
-    CONFIG_SCHEMA = vol.Schema({
-        vol.Required('name', description='Friendly name for the device'): str,
-        vol.Optional('max_brightness', description='Max brightness for the device', default=1.0): vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
-        vol.Optional('center_offset', description='Number of pixels from the preceived center of the device', default=0): int,
-        vol.Optional('refresh_rate', description='Rate that pixels are sent to the device', default=60): int,
-        vol.Optional('force_refresh', description='Force the device to always refresh', default=False): bool,
-        vol.Optional('preview_only', description='Preview the pixels without updating the device', default=False): bool
-    })
+    CONFIG_SCHEMA = vol.Schema(
+        {
+            vol.Required(
+                "name", description="Friendly name for the device"
+            ): str,
+            vol.Optional(
+                "max_brightness",
+                description="Max brightness for the device",
+                default=1.0,
+            ): vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
+            vol.Optional(
+                "center_offset",
+                description="Number of pixels from the perceived center of the device",
+                default=0,
+            ): int,
+            vol.Optional(
+                "refresh_rate",
+                description="Rate that pixels are sent to the device",
+                default=60,
+            ): int,
+            vol.Optional(
+                "force_refresh",
+                description="Force the device to always refresh",
+                default=False,
+            ): bool,
+            vol.Optional(
+                "preview_only",
+                description="Preview the pixels without updating the device",
+                default=False,
+            ): bool,
+        }
+    )
 
     _active = False
     _output_thread = None
@@ -105,8 +129,8 @@ class Device(BaseRegistry):
 
     def thread_function(self):
         # TODO: Evaluate switching over to asyncio with UV loop optimization
-        # instead of spinning a seperate thread.
-        sleep_interval = 1 / self._config['refresh_rate']
+        # instead of spinning a separate thread.
+        sleep_interval = 1 / self._config["refresh_rate"]
 
         if self._active:
             self._ledfx.loop.call_later(sleep_interval, self.thread_function)
@@ -127,7 +151,7 @@ class Device(BaseRegistry):
     def assemble_frame(self):
         """
         Assembles the frame to be flushed. Currently this will just return
-        the active channels pixels, but will eventaully handle things like
+        the active channels pixels, but will eventually handle things like
         merging multiple segments segments and alpha blending channels
         """
         frame = None
@@ -186,7 +210,7 @@ class Device(BaseRegistry):
     @abstractmethod
     def flush(self, data):
         """
-        Flushes the provided data to the device. This abstract medthod must be 
+        Flushes the provided data to the device. This abstract method must be
         overwritten by the device implementation.
         """
 
