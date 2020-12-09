@@ -708,7 +708,7 @@ class MelbankInputSource(AudioInputSource):
             # ensure it's between 0 and 1. useful when audio cuts
             oscillator = min(1, oscillator)
             oscillator = max(0, oscillator)
-        return oscillator, is_beat
+        return oscillator, is_beat    
 
 
 @Effect.no_registration

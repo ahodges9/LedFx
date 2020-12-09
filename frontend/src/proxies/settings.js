@@ -10,3 +10,10 @@ export function getAudioInputs() {
 export function updateSelectedAudioInput(data) {
     return api.put('/audio/devices', data);
 }
+
+export function getQLCEnabled(data) {
+    return api.get('/qlc', data);
+}
+export function setQLCEnabled(data) {
+    return api.put('/qlc', data);
+}

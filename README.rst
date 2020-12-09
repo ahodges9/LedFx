@@ -91,7 +91,6 @@ To join, click on the Discord button below:
 
     <a href="https://discord.com/invite/wJ755dY"><img src="https://discordapp.com/api/guilds/469985374052286474/widget.png?style=banner2" width="30%"></a>
 
-
 Contributing
 --------------
 Pull requests are welcome. Once tested, contact LedFx developer community on Discord to discuss the next step.
@@ -114,8 +113,8 @@ License
 .. _`Voicemeeter tutorial`: https://youtu.be/ZXKDzYXS60o?start=27&end=163
 .. _`Loopback`: https://rogueamoeba.com/loopback/
 
-.. |Build Status| image:: https://travis-ci.org/ahodges9/LedFx.svg?branch=dev
-   :target: https://github.com/ahodges9/LedFx/tree/dev
+.. |Build Status| image:: https://travis-ci.org/ahodges9/LedFx.svg?branch=master
+   :target: https://github.com/THATDONFC/LedFx/tree/docs
    :alt: Build Status
 .. |Build Status Docs| image:: https://readthedocs.org/projects/ledfx/badge/?version=dev
    :target: https://ledfx.readthedocs.io/en/dev

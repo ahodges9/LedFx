@@ -27,7 +27,7 @@ package-lock.json
 .pydevproject
 .settings
 .idea
-.vscode/settings.json
+.vscode
 *.code-workspace
 
 # Package files
@@ -51,13 +51,13 @@ docs/api/*
 docs/_build/*
 cover/*
 MANIFEST
-
+build.bat
+ledfx.nsi
+__main__.spec
+LedFx Installer.exe
 
 
 # Keyfile and pyupdater files for signing pyupdater
 keypack.pyu
 .pyupdater/
-pyu-data/
-# Sentry Data
-ledfx/sentry_config.py
-formatting_test.bat
+pyu-data/*

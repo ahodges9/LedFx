@@ -7,6 +7,8 @@ import { getAudioInputs, setAudioInput } from 'modules/settings';
 
 import AudioInputCard from './AudioInput';
 import ConfigCard from './ConfigCard';
+//import EnableQLC from './EnableQLC';
+
 
 const styles = theme => ({});
 
