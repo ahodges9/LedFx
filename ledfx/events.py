@@ -10,6 +10,9 @@ class Event:
     LEDFX_SHUTDOWN = 'shutdown'
     DEVICE_UPDATE = 'device_update'
     GRAPH_UPDATE = 'graph_update'
+    SCENE_SET = 'scene_set'
+    EFFECT_SET = 'effect_set'
+    EFFECT_CLEARED = 'effect_cleared'
 
     def __init__(self, type : str):
         self.event_type = type
@@ -33,6 +36,27 @@ class GraphUpdateEvent(Event):
         self.graph_id = graph_id
         self.melbank = melbank.tolist()
         self.frequencies = frequencies.tolist()
+
+class SceneSetEvent(Event):
+    """Event emmitted when a scene is activated"""
+
+    def __init__(self, scene_id : str):
+        super().__init__(Event.SCENE_SET)
+        self.scene_id = scene_id
+
+class EffectSetEvent(Event):
+    """Event emmitted when a device's effect is activated"""
+
+    def __init__(self, device_id : str, effect_id : str):
+        super().__init__(Event.EFFECT_SET)
+        self.effect_id = effect_id
+
+class EffectClearedEvent(Event):
+    """Event emmitted when a device's effect is cleared"""
+
+    def __init__(self, device_id : str, effect_id : str):
+        super().__init__(Event.EFFECT_CLEARED)
+        self.effect_id = effect_id
 
 class LedFxShutdownEvent(Event):
     """Event emmitted when LedFx is shutting down"""

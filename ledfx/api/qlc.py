@@ -1,28 +1,30 @@
 from ledfx.config import save_config
 from ledfx.api import RestEndpoint
+from ledfx.api.websocket import WebsocketConnection
 from ledfx.utils import generate_id
 from aiohttp import web
-from ledfx.events import SceneSetEvent
 import logging
 import json
 
 _LOGGER = logging.getLogger(__name__)
 
-class ScenesEndpoint(RestEndpoint):
-    """REST end-point for querying and managing scenes"""
+class QLCEndpoint(RestEndpoint):
+    """REST end-point for querying and managing QLC webhook"""
 
-    ENDPOINT_PATH = "/api/scenes"
+    ENDPOINT_PATH = "/api/qlc"
 
     async def get(self) -> web.Response:
-        """Get all scenes"""
+        """Get status of QLC webhook"""
         response = {
             'status' : 'success' ,
-            'scenes' : self._ledfx.config['scenes'] 
+            # 'qlc_enabled' : # is qlc integration enabled?,
+            # 'qlc_ip' : # ip address for qlc?
+            # 'qlc_webhook_status' : # is the webhook connected?,
         }
         return web.json_response(data=response, status=200)
 
     async def delete(self, request) -> web.Response:
-        """Delete a scene"""
+        """Disable QLC webhook"""
         data = await request.json()
 
         scene_id = data.get('id')
@@ -35,7 +37,7 @@ class ScenesEndpoint(RestEndpoint):
             return web.json_response(data=response, status=500)
         
         # Delete the scene from configuration
-        del self._ledfx.config['scenes'][scene_id]
+        del self._ledfx.config['qlc'][scene_id]
 
         # Save the config
         save_config(
@@ -46,26 +48,9 @@ class ScenesEndpoint(RestEndpoint):
         return web.json_response(data=response, status=200)
 
     async def put(self, request) -> web.Response:
-        """Activate a scene"""
+        """Update QLC webhook IP address"""
         data = await request.json()
 
-        action = data.get('action')
-        if action is None:
-            response = { 'status' : 'failed', 'reason': 'Required attribute "action" was not provided' }
-            return web.json_response(data=response, status=500)
-
-        if action not in ['activate', 'rename']:
-            response = { 'status' : 'failed', 'reason': 'Invalid action "{}"'.format(action) }
-            return web.json_response(data=response, status=500)
-
-        scene_id = data.get('id')
-        if scene_id is None:
-            response = { 'status' : 'failed', 'reason': 'Required attribute "scene_id" was not provided' }
-            return web.json_response(data=response, status=500)
-
-        if not scene_id in self._ledfx.config['scenes'].keys():
-            response = { 'status' : 'failed', 'reason': 'Scene "{}" does not exist'.format(scene_id) }
-            return web.json_response(data=response, status=500)
 
         scene = self._ledfx.config['scenes'][scene_id]
 
@@ -88,11 +73,6 @@ class ScenesEndpoint(RestEndpoint):
                 else:
                     device.clear_effect()
 
-                def trigger_scene_set_event(): 
-                    self._ledfx.events.fire_event(SceneSetEvent(
-                        scene_id))
-                self._ledfx.loop.call_soon_threadsafe(trigger_scene_set_event)
-
         elif action == "rename":
             name = data.get('name')
             if name is None:
@@ -109,7 +89,7 @@ class ScenesEndpoint(RestEndpoint):
         return web.json_response(data=response, status=200)
 
     async def post(self, request) -> web.Response:
-        """Save current effects of devices as a scene"""
+        """Activate QLC webhook"""
         data = await request.json()
 
         scene_name = data.get('name')
