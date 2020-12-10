@@ -96,8 +96,10 @@ class IntegrationsEndpoint(RestEndpoint):
             return web.json_response(data=response, status=500)
 
         integration_id = data.get("id")
+        new = not bool(integration_id)
         if integration_id is None:
             # Create new integration if no id is given
+            integration_id = generate_id(integration_config.get("name"))
             _LOGGER.info(
                 ("Creating {} integration with config {}").format(
                     integration_type, integration_config
@@ -130,10 +132,21 @@ class IntegrationsEndpoint(RestEndpoint):
         )
 
         # Update and save the configuration
-        for integration in self._ledfx.config["integrations"]:
-            if integration["id"] == integration_id:
-                integration["config"] = integration_config
-                break
+        if new:
+            self._ledfx.config["integrations"].append(
+                {
+                    "id": integration.id,
+                    "type": integration.type,
+                    "config": integration.config,
+                }
+            )
+        else:
+            for integration in self._ledfx.config["integrations"]:
+                if integration["id"] == integration_id:
+                    integration["config"] = integration_config
+                    break
+                    # Update and save the configuration
+
         save_config(
             config=self._ledfx.config,
             config_dir=self._ledfx.config_dir,
