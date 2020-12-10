@@ -80,7 +80,7 @@ class LedFxCore(object):
             self.loop.run_forever()
         except:
             # Catch all other exceptions and terminate the application. The loop
-            # exception handler will take care of logging the actual error and
+            # exeception handler will take care of logging the actual error and
             # LedFx will cleanly shutdown.
             self.loop.run_until_complete(self.async_stop(exit_code = -1))
             pass
