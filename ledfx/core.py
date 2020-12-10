@@ -11,6 +11,7 @@ from ledfx.utils import async_fire_and_forget
 from ledfx.http import HttpServer
 from ledfx.devices import Devices
 from ledfx.effects import Effects
+from ledfx.integrations import Integrations
 from ledfx.config import load_config, save_config, load_default_presets
 from ledfx.events import Events, LedFxShutdownEvent
 
@@ -93,16 +94,17 @@ class LedFxCore(object):
 
         self.devices = Devices(self)
         self.effects = Effects(self)
+        self.integrations = Integrations(self)
 
         # TODO: Deferr
         self.devices.create_from_config(self.config['devices'])
+        self.integrations.create_from_config(self.config['integrations'])
 
-        # TODO: This step blocks for 1.5 secs while searching for devices. 
-        # It needs a callback in 3-5 seconds to kill the zeroconf browser, which is
-        # implemented using a blocking time.sleep 
         if not self.devices.values():
             _LOGGER.info("No devices saved in config.")
             async_fire_and_forget(self.devices.find_wled_devices(), self.loop)
+
+        async_fire_and_forget(self.integrations.establish_connections(), self.loop)
 
         if open_ui:
             import webbrowser
