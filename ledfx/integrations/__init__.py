@@ -26,8 +26,8 @@ class Integration(BaseRegistry):
 
     def activate(self):
         _LOGGER.info(
-            ("Activating {} integration with id {}").format(
-                self._config["type"], self._config["id"]
+            ("Activating {} integration").format(
+                self._config["name"]
             )
         )
         self._active = True
@@ -35,8 +35,8 @@ class Integration(BaseRegistry):
 
     def deactivate(self):
         _LOGGER.info(
-            ("Deactivating {} integration with id {}").format(
-                self._config["type"], self._config["id"]
+            ("Deactivating {} integration").format(
+                self._config["name"]
             )
         )
         self._active = False
@@ -44,8 +44,8 @@ class Integration(BaseRegistry):
 
     def reconnect(self):
         _LOGGER.info(
-            ("Reconnecting {} integration with id {}").format(
-                self._config["type"], self._config["id"]
+            ("Reconnecting {} integration").format(
+                self._config["name"]
             )
         )
         self.disconnect()

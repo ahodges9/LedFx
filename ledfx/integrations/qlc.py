@@ -47,7 +47,7 @@ class QLC(Integration):
     def __init__(self, ledfx, config):
         super().__init__(ledfx, config)
 
-        self._connection = None
+        self._ws = None
 
         def send_payload(e):
             print(f"Heard event {e}")
