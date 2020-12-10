@@ -1,4 +1,4 @@
-from ledfx.utils import RegistryLoader
+from ledfx.utils import RegistryLoader, async_fire_and_forget
 from ledfx.events import Event
 from ledfx.integrations import Integration
 import aiohttp
@@ -44,39 +44,89 @@ class QLC(Integration):
         }
     )
 
-    def __init__(self, ledfx, config):
-        super().__init__(ledfx, config)
+    def __init__(self, ledfx, config, active):
+        super().__init__(ledfx, config, active)
 
-        self._ws = None
+        self._ledfx = ledfx
+        self._config = config
+        self.client = None
 
-        def send_payload(e):
-            print(f"Heard event {e}")
-            self.send_package(e)
+        # def send_payload(e):
+        #     print(f"Heard event {e}")
 
-        self._ledfx.events.add_listener(
-            send_payload, Event.SCENE_SET)
+        # self._ledfx.events.add_listener(
+        #     send_payload, Event.SCENE_SET)
 
-    async def callback(self, msg):
-        print(msg)
+        if active:
+            self.activate()
 
-    async def send(self, msg):
-        await self._ws.send_str(msg)
+    def handle_message(self, message):
+        print(f"NEW MESSAGE: {message}")
 
-    async def connect(self):
-        print("BITCONNEEEEEECT")
-        addr = ":".join((self._config['ip_address'], str(self._config['port'])))
-        async with aiohttp.ws_connect(addr) as self._ws:
-            async for msg in self._ws:
-                if msg.type == aiohttp.WSMsgType.TEXT:
-                    await self.callback(msg)
-                elif msg.type == aiohttp.WSMsgType.CLOSED:
-                    break
-                elif msg.type == aiohttp.WSMsgType.ERROR:
-                    break
+    def connect(self):
+        domain = f"{self._config['ip_address']}:{str(self._config['port'])}"
+        url = f"http://{domain}/qlcplusWS"
+        self.client = WebsocketClient(url, domain)
+        async_fire_and_forget(self.client.begin(self.handle_message), self._ledfx.loop)
 
     def disconnect(self):
-        if self._ws is not None:
-            self._ws.close()
+        if self.client is not None:
+            async_fire_and_forget(self.client.disconnect(), self._ledfx.loop)
 
-    def send_package(self, e):
-        print(e)
+class WebsocketClient(aiohttp.ClientSession):
+    def __init__(self, url, domain):
+        super().__init__()
+        self.websocket = None
+        self.url = url
+        self.domain = domain
+
+    async def connect(self):
+        """Connect to the WebSocket."""
+        while True:
+            try: 
+                self.websocket = await self.ws_connect(self.url)
+                _LOGGER.info(f"Connected websocket to {self.domain}")
+                return
+            except aiohttp.client_exceptions.ClientConnectorError:
+                _LOGGER.info(f"Connection to {self.domain} failed. Retrying in 5s...")
+                await asyncio.sleep(5)
+
+    async def disconnect(self):
+        if self.websocket is not None:
+            return await self.websocket.close()
+
+    async def begin(self, callback):
+        await self.connect()
+        await self.read(callback)
+
+    async def send(self, message):
+        """Send a message to the WebSocket."""
+        if self.websocket is None:
+            _LOGGER.error("Websocket not yet established")
+            return
+
+        self.websocket.send_str(message)
+        _LOGGER.info(f"Sent message {message} to {self.domain}")
+
+    async def receive(self):
+        """Receive one message from the WebSocket."""
+        if self.websocket is None:
+            _LOGGER.error("Websocket not yet established")
+            return
+        
+        return (await self.websocket.receive()).data
+
+    async def read(self, callback):
+        """Read messages from the WebSocket."""
+        if self.websocket is None:
+            _LOGGER.error("Websocket not yet established")
+            return
+
+        while await self.websocket.receive():
+            message = await self.receive()
+            if message.type == aiohttp.WSMsgType.TEXT:
+                self.callback(message)
+            elif message.type == aiohttp.WSMsgType.CLOSED:
+                break
+            elif message.type == aiohttp.WSMsgType.ERROR:
+                break

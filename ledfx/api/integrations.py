@@ -20,6 +20,7 @@ class IntegrationsEndpoint(RestEndpoint):
             response["integrations"][integration.id] = {
                 "id": integration.id,
                 "type": integration.type,
+                "active": integration.active,
                 "status": integration.status,
                 "config": integration.config
             }
@@ -127,6 +128,7 @@ class IntegrationsEndpoint(RestEndpoint):
         integration = self._ledfx.integrations.create(
             id=integration_id,
             type=integration_type,
+            active=True,
             config=integration_config,
             ledfx=self._ledfx
         )
@@ -137,6 +139,7 @@ class IntegrationsEndpoint(RestEndpoint):
                 {
                     "id": integration.id,
                     "type": integration.type,
+                    "active": integration.active,
                     "config": integration.config,
                 }
             )

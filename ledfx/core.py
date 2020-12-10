@@ -104,8 +104,6 @@ class LedFxCore(object):
             _LOGGER.info("No devices saved in config.")
             async_fire_and_forget(self.devices.find_wled_devices(), self.loop)
 
-        async_fire_and_forget(self.integrations.establish_connections(), self.loop)
-
         if open_ui:
             import webbrowser
             webbrowser.open(self.http.base_url)

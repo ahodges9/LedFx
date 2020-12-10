@@ -16,9 +16,10 @@ class Integration(BaseRegistry):
     _active = False
     _status = None
 
-    def __init__(self, ledfx, config):
+    def __init__(self, ledfx, config, active):
         self._ledfx = ledfx
         self._config = config
+        self._active = active
 
     def __del__(self):
         if self._active:
@@ -105,11 +106,6 @@ class Integrations(RegistryLoader):
                 active = integration['active'],
                 config = integration['config'],
                 ledfx = self._ledfx)
-
-    async def establish_connections(self):
-        for integration in self.values():
-            if integration.config['active']:
-                integration.activate()
                 
     def close_all_connections(self):
         for integration in self.values():
