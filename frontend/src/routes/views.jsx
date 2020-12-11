@@ -61,9 +61,8 @@ const viewRoutes = [
     navbarName: "Developer",
     icon: Tune,
     component: DeveloperView
-  }, 
+  },
   { redirect: true, path: "/", to: "/dashboard", navbarName: "Redirect" }
 ];
 
 export default viewRoutes;
-

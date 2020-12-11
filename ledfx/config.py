@@ -1,8 +1,9 @@
-import voluptuous as vol
 import logging
-import yaml
-import sys
 import os
+import sys
+
+import voluptuous as vol
+import yaml
 
 _LOGGER = logging.getLogger(__name__)
 

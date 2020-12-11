@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+
 import ledfx.consts as const
 
 PROJECT_PACKAGE_NAME = "ledfx-dev"
