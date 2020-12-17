@@ -10,7 +10,6 @@ repos:
     hooks:
     - id: check-yaml
     - id: check-ast
-    - id: end-of-file-fixer
     - id: trailing-whitespace
     - id: check-toml
   - repo: https://github.com/PyCQA/isort
