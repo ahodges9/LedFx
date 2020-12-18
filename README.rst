@@ -1,4 +1,16 @@
 =====================================================
+   PLEASE NOTE: DEVELOPMENT OF THIS PROJECT HAS MOVED TO https://github.com/LedFx/LedFx
+=====================================================
+
+Hop on over to the new repo for updates!
+
+
+---------------
+
+
+
+
+=====================================================
    Welcome to LedFx ✨ *-Making music come alive!*
 =====================================================
 |Build Status| |License| |Build Status Docs| |Discord|
