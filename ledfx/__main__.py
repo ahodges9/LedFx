@@ -177,9 +177,8 @@ def main():
         update_ledfx()
     config_helpers.ensure_config_directory(args.config)
     ledfx = LedFxCore(config_dir=args.config, host=args.host, port=args.port)
-
+    _LOGGER.critical("THIS GIT REPO IS NO LONGER MAINTAINED. PLEASE UPDATE YOUR SOURCES TO THE OFFICIAL LEDFX GITHUB - GIT.LEDFX.APP")
     ledfx.start(open_ui=args.open_ui)
-
-
+    
 if __name__ == "__main__":
     sys.exit(main())
