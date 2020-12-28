@@ -86,7 +86,6 @@ def main():
     setup_logging(args.loglevel)
 
     ledfx = LedFxCore(config_dir = args.config)
-    _LOGGER.critical("THIS GIT REPO IS NO LONGER MAINTAINED. PLEASE UPDATE YOUR SOURCES TO THE OFFICIAL LEDFX GITHUB - GIT.LEDFX.APP")
     ledfx.start(open_ui = args.open_ui)
 
 if __name__ == "__main__":
