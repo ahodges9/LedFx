@@ -25,4 +25,4 @@ We are actively adding and perfecting the effects, but here is a quick demo of L
    :target: https://travis-ci.org/ahodges9/LedFx
 .. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg
 .. |Discord| image:: https://img.shields.io/badge/chat-on%20discord-7289da.svg
-   :target: https://discord.gg/wJ755dY 
+   :target: https://discord.gg/xyyHEquZKQ 
