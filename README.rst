@@ -2,6 +2,12 @@
    PLEASE NOTE: DEVELOPMENT HAS MOVED TO https://github.com/LedFx/LedFx
 =====================================================
 
+============
+THIS REPO IS NO LONGER MAINTAINED. YOUR ISSUES GO UNHEARD TO THE VOID.
+============
+============
+YOU'LL HAVE BETTER LUCK ASKING `HERE <https://git.ledfx.app/>`__.
+============
 We've moved! Active development has moved to the `LedFx Official Github <https://git.ledfx.app/>`__. LedFx website: https://ledfx.app/
 
 We thank ahodges for his spectacular work and hope he comes back soon.
